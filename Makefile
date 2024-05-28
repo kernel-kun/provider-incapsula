@@ -8,7 +8,7 @@ export TERRAFORM_VERSION ?= 1.8.3
 
 export TERRAFORM_PROVIDER_SOURCE ?= imperva/incapsula
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/imperva/terraform-provider-incapsula
-export TERRAFORM_PROVIDER_VERSION ?= 3.25.1
+export TERRAFORM_PROVIDER_VERSION ?= 3.21.4
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-incapsula
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://releases.hashicorp.com/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= terraform-provider-incapsula_3.25.1
