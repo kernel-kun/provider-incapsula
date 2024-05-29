@@ -1,0 +1,44 @@
+apiVersion: site.upbound.io/v1alpha1
+kind: Site
+metadata:
+  annotations:
+    meta.upbound.io/example-id: site/v1alpha1/site
+  labels:
+    testing.upbound.io/example-name: example-site
+  name: example-site
+spec:
+  forProvider:
+    accountId: 123
+    dataStorageRegion: US
+    domain: examplesite.com
+    forceSsl: "false"
+    hashSalt: foobar
+    hashingEnabled: true
+    logLevel: full
+    logsAccountId: "456"
+    perfClientComplyNoCache: true
+    perfClientEnableClientSideCaching: true
+    perfClientSendAgeHeader: true
+    perfKeyComplyVary: true
+    perfKeyUniteNakedFullCache: true
+    perfModeHttps: include_all_resources
+    perfModeLevel: standard
+    perfModeTime: 1000
+    perfResponseCache300X: true
+    perfResponseCache404Enabled: true
+    perfResponseCache404Time: 60
+    perfResponseCacheEmptyResponses: true
+    perfResponseCacheHttp10Responses: true
+    perfResponseCacheResponseHeaderMode: custom
+    perfResponseCacheResponseHeaders:
+    - Access-Control-Allow-Origin
+    - Foo-Bar-Header
+    perfResponseCacheShield: true
+    perfResponseStaleContentMode: custom
+    perfResponseStaleContentTime: 1000
+    perfResponseTagResponseHeader: Example-Tag-Value-Header
+    perfTtlPreferLastModified: true
+    perfTtlUseShortestCaching: true
+    refId: "123"
+    sendSiteSetupEmails: "false"
+    siteIp: 2.2.2.2

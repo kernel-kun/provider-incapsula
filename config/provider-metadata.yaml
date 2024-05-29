@@ -1,36 +1,2255 @@
-name: hashicorp/null
+name: imperva/incapsula
 resources:
-    null_resource:
-        subCategory: ""
-        description: The null_resource resource implements the standard resource lifecycle but takes no further action. The triggers argument allows specifying an arbitrary set of values that, when changed, will cause the resource to be replaced.
-        name: null_resource
-        title: null_resource Resource - terraform-provider-null
+    incapsula_abp_websites:
+        subCategory: Provider Reference
+        description: Provides an ABP (Advanced Bot Protection) website resource.
+        name: incapsula_abp_websites
+        title: incapsula_abp_websites
         examples:
-            - name: cluster
+            - name: abp_websites
               manifest: |-
                 {
-                  "connection": [
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "auto_publish": true,
+                  "website_group": [
                     {
-                      "host": "${element(aws_instance.cluster.*.public_ip, 0)}"
+                      "name": "sites-1",
+                      "website": [
+                        {
+                          "enable_mitigation": false,
+                          "site_id": "${incapsula_site.sites-1.id}"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "sites-2",
+                      "website": [
+                        {
+                          "enable_mitigation": true,
+                          "site_id": "${incapsula_site.sites-2.id}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+                website_group.website.site_id: incapsula_site.sites-2.id
+            - name: abp_websites
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "auto_publish": true,
+                  "website_group": [
+                    {
+                      "name": "sites",
+                      "website": [
+                        {
+                          "enable_mitigation": false,
+                          "site_id": "${incapsula_site.sites-1.id}"
+                        },
+                        {
+                          "enable_mitigation": true,
+                          "site_id": "${incapsula_site.sites-2.id}"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "sites",
+                      "name_id": "sites-2",
+                      "website": [
+                        {
+                          "enable_mitigation": true,
+                          "site_id": "${incapsula_site.sites-3.id}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+                website_group.website.site_id: incapsula_site.sites-3.id
+        argumentDocs:
+            account_id: (Number) The account these websites belongs to.
+            auto_publish: (Boolean) Whether to publish the changes automatically. Changes don't take take effect until they have been published.
+            enable_mitigation: (Boolean) Enables the ABP conditions for this website. Defaults to true.
+            id: (String) The ID of this resource.
+            incapsula_site_id: (Number) Which incapsula_site this website refers to
+            last_publish: (String) When the last publish was done for this terraform resource. Changes are published when auto_publish is true and the terraform config is applied.
+            name: (String) Name for the website group. Must be unique unless name_id is specified.
+            name_id: (String) Unique user-defined identifier used to differentiate website groups whose name is identical
+            website: (Block List) List of websites within the website group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list (see below for nested schema)
+            website_group: (Block List) List of website groups which are associated to ABP. Website groups are matched in a top-down fashion. If a more specific website group should take precedence over over a wild card entry then that should be higher in the list. (see below for nested schema)
+        importStatements:
+            - terraform import incapsula_abp_websites.websites 1234
+    incapsula_account:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Account resource.
+        name: incapsula_account
+        title: incapsula_account
+        examples:
+            - name: example-account
+              manifest: |-
+                {
+                  "account_name": "Example Account",
+                  "consent_required": true,
+                  "data_storage_region": "US",
+                  "email": "example@example.com",
+                  "error_page_template": "RlP5QhsBHAECGUVDFxYZVCQFBwkDBggLBA0MFB0cGhsYFTgCIgUgJx3EG8LuM6ZpqwR8ScEztVwTqbxuB8...",
+                  "log_level": "full",
+                  "logs_account_id": "456",
+                  "parent_id": 123,
+                  "plan_id": "ent100",
+                  "ref_id": "123",
+                  "user_name": "John Doe"
+                }
+        argumentDocs:
+            account_name: '- (Optional) Account name.'
+            consent_required: '- (Optional) Blocks Imperva from performing sensitive operations on your behalf. You can then activate consent via the Cloud Security Console UI. Options are true, false.'
+            data_storage_region: '- (Optional) Default data region of the account for newly created sites. Options are APAC, EU, US and AU. Defaults to US.'
+            email: '- (Required) Email address of the account admin. For example: joe@example.com.'
+            enable_http2_for_new_sites: '- (Optional) Use this option to enable HTTP/2 support for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are true and false. Defaults to true.'
+            enable_http2_to_origin_for_new_sites: '- (Optional) Use this option to enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be ''true'' once ''enable_http2_for_new_sites'' is enabled for newly created sites. Options are true and false. Defaults to false.'
+            error_page_template: '- (Optional) Base64 encoded template for an error page.'
+            id: '- Unique identifier in the API for the account.'
+            log_level: '- (Optional) The log level. Options are full, security, and none.'
+            logs_account_id: '- (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            naked_domain_san_for_new_www_sites: |-
+                - (Optional) Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are true and false. Defaults to true.
+                Note: This argument is deprecated. Use add_naked_domain_san_for_www_sites in the account_ssl_settings resource instead.
+            parent_id: '- (Optional) The newly created account''s parent id. If not specified, the invoking account will be assigned as the parent.'
+            plan_id: '- (Optional) An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan (values can be provided by your account manager).'
+            plan_name: '- The CNAME record value.'
+            ref_id: '- (Optional) Customer specific identifier for this operation.'
+            support_all_tls_versions: |-
+                - (Optional) Allow sites in the account to support all TLS versions for connectivity between clients (visitors) and the Imperva service.
+                Note: This argument is deprecated. Use add_naked_domain_san_for_www_sites in the account_ssl_settings resource instead.
+            support_level: '- The CNAME record name.'
+            trial_end_date: '- Numeric representation of the site creation date.'
+            user_name: '- (Optional) The account owner''s name. For example: John Doe.'
+            wildcard_san_for_new_sites: |-
+                - (Optional) Add wildcard SAN to Incapsula SSL certificates for new sites. Options are true, false and default. Defaults to default.
+                Note: This argument is deprecated. Use use_wild_card_san_instead_of_fqdn in the account_ssl_settings resource instead.
+        importStatements: []
+    incapsula_account_policy_association:
+        subCategory: Provider Reference
+        description: Provides an Incapsula Account Policy Association resource.
+        name: incapsula_account_policy_association
+        title: incapsula_account_policy_association
+        examples:
+            - name: example-account-policy-association
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "default_non_mandatory_policy_ids": [
+                    "123777",
+                    "123888",
+                    "123999",
+                    "123444",
+                    "${incapsula_policy.default_acl_policy.id}",
+                    "${incapsula_policy.default_allowlist_policy.id}"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+            - name: example-account-policy-association
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "default_non_mandatory_policy_ids": [
+                    "123777",
+                    "123888",
+                    "123999",
+                    "123444",
+                    "${incapsula_policy.default_acl_policy.id}",
+                    "${incapsula_policy.default_allowlist_policy.id}"
+                  ],
+                  "default_waf_policy_id": "1480033"
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+        argumentDocs:
+            account_id: '- (Required) The account to operate on.'
+            available_policy_ids: |-
+                - (Optional) Comma separated list of the account’s available policies. These policies can be applied to the websites in the account.
+                e.g. available_policy_ids = format("%s,%s", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)
+                Specify this argument only for a parent account trying to update policy availability for its subaccounts. To remove availability for all policies, specify “NO_AVAILABLE_POLICIES”.
+            default_non_mandatory_policy_ids: |-
+                - (Optional)  This list is currently relevant to Allowlist and ACL policies. More than one policy can be set as default.
+                The default policies can be set for the current account, or if used by users with credentials of the parent account can also be set for sub-accounts.
+                Default setting – empty list. No default policy. Providing an empty list or omitting this argument will clear all the non-mandatory default policies.
+            default_waf_policy_id: |-
+                - (Optional)  The WAF policy which is set as default for the account. The account can only have 1 such ID.
+                The Default policy will be applied automatically to sites that are created after setting it to default.
+                This default setting can be set for the current account, or if used by users with credentials of the parent account can also be set for sub-accounts.
+                This parameter is MANDATORY for customers that have account level WAF RULES policies enabled. This means that a default WAF RULES policy resource must be created.
+                For customers who were not migrated yet, this parameter should not be set. However, after migration, a WAF RULES policy must be added and set as default.
+                Default setting - None.
+        importStatements: []
+    incapsula_account_role:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Account Role resource.
+        name: incapsula_account_role
+        title: incapsula_account_role
+        examples:
+            - name: role_1
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "description": "Sample Role Description 1",
+                  "name": "Sample Role 1",
+                  "permissions": [
+                    "canAddSite",
+                    "canEditSite"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+            - name: role_1
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "description": "Sample Role Description 1",
+                  "name": "Sample Role 1",
+                  "permissions": [
+                    "canAddSite",
+                    "canEditSite",
+                    "${data.incapsula_account_permissions.account_permissions.map[\"View Infra Protect settings\"]}",
+                    "${data.incapsula_account_permissions.account_permissions.map[\"Delete exception from policy\"]}"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+            - name: role_2
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "description": "Sample Role Description 2",
+                  "name": "Sample Role 2",
+                  "permissions": "${data.incapsula_account_permissions.account_permissions.keys}"
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+                permissions: data.incapsula_account_permissions.account_permissions.keys
+        argumentDocs:
+            account_id: '- (Required) Numeric identifier of the account to operate on - a reference to the account datasource may be used'
+            description: '- (Optional) The role description'
+            id: '- Unique identifier in the API for the account role.'
+            incapsula_account_permissions: data source can be used in different ways (see examples above)
+            name: '- (Required) The role name'
+            permissions: '- (Optional) List of account permission keys'
+        importStatements: []
+    incapsula_account_ssl_settings:
+        subCategory: Provider Reference
+        description: Provides an Incapsula Account SSL Settings resource.
+        name: incapsula_account_ssl_settings
+        title: incapsula_account_ssl_settings
+        examples:
+            - name: ssl-52546413
+              manifest: |-
+                {
+                  "account_id": 123,
+                  "add_naked_domain_san_for_www_sites": false,
+                  "allow_cname_validation": true,
+                  "allow_support_old_tls_versions": false,
+                  "allowed_domain_for_cname_validation": [
+                    {
+                      "name": "example.com"
+                    },
+                    {
+                      "name": "example2.com"
                     }
                   ],
-                  "provisioner": {
-                    "remote-exec": [
-                      {
-                        "inline": [
-                          "bootstrap-cluster.sh ${join(\" \", aws_instance.cluster.*.private_ip)}"
-                        ]
-                      }
-                    ]
-                  },
-                  "triggers": {
-                    "cluster_instance_ids": "${join(\",\", aws_instance.cluster.*.id)}"
-                  }
+                  "enable_hsts_for_new_sites": true,
+                  "use_wild_card_san_instead_of_fqdn": true
                 }
+        argumentDocs:
+            account_id: '- (Required) Numeric identifier of the account to operate on - a reference to the account datasource may be used.'
+            add_naked_domain_san_for_www_sites: '- (Optional) Newly created WWW sites will have also naked domain SAN on the Imperva-generated certificate. Default: true.'
+            allow_cname_validation: '- (Optional) Delegate to Imperva the ability to automatically prove ownership of SANs under the domains in the allowed_domains_for_cname_validation list. Default: false.'
+            allow_support_old_tls_versions: '- (Optional) When true, sites under the account or sub-accounts can allow support of old TLS versions traffic. This can be configured only on the parent account level. Default: false.'
+            allowed_domain_for_cname_validation: '- (Optional) Sub resources can be defined to set domains for automatic validation. allow-cname-validation must be set to true.'
+            cname_record_host: '- The CNAME record host to use.'
+            cname_record_value: '- The CNAME record value to use to configure this domain for delegation.'
+            creation_date: '- The domain creation date.'
+            enable_hsts_for_new_sites: '- (Optional) When true, enables HSTS support for newly created websites. Default: true.'
+            id: '- The resource id.'
+            last_status_check: '- The date the domain status was last verified.'
+            name: '- (Required) The domain name.'
+            status: '- The domain status. Possible values: CONFIGURED, NOT_CONFIGURED.'
+            status_since: '- The date the domain status was last modified.'
+            use_wild_card_san_instead_of_fqdn: '- (Optional) Newly created sites will use wildcard SAN instead of FQDN SAN on the Imperva-generated certificate. Default: true.'
+        importStatements: []
+    incapsula_account_user:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Account User resource.
+        name: incapsula_account_user
+        title: incapsula_account_user
+        examples:
+            - name: user_1
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "email": "example@terraform.com",
+                  "first_name": "First",
+                  "last_name": "Last"
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+            - name: user_2
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "email": "example@terraform.com",
+                  "first_name": "First",
+                  "last_name": "Last",
+                  "role_ids": [
+                    "${incapsula_account_role.role_1.id}",
+                    "${incapsula_account_role.role_2.id}"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
               dependencies:
-                aws_instance.cluster: |-
+                incapsula_account_role.role_1: |-
                     {
-                      "count": 3
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 1"
                     }
-        argumentDocs: {}
+                incapsula_account_role.role_2: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 2"
+                    }
+            - name: user_3
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "email": "example@terraform.com",
+                  "first_name": "First",
+                  "last_name": "Last",
+                  "role_ids": [
+                    "${incapsula_account_role.role_1.id}",
+                    "${incapsula_account_role.role_2.id}",
+                    "${data.incapsula_account_roles.roles.reader_role_id}"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+              dependencies:
+                incapsula_account_role.role_1: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 1"
+                    }
+                incapsula_account_role.role_2: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 2"
+                    }
+            - name: user_1
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "email": "example@terraform.com",
+                  "first_name": "First",
+                  "last_name": "Last"
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+              dependencies:
+                incapsula_account_role.role_1: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 1"
+                    }
+            - name: user_2
+              manifest: |-
+                {
+                  "account_id": "${incapsula_subaccount.example-subaccount.id}",
+                  "email": "${incapsula_account_user.user_1.email}",
+                  "role_ids": [
+                    "${incapsula_account_role.role_1.id}"
+                  ]
+                }
+              references:
+                account_id: incapsula_subaccount.example-subaccount.id
+                email: incapsula_account_user.user_1.email
+              dependencies:
+                incapsula_account_role.role_1: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "name": "Sample Role 1"
+                    }
+            - name: user_2
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "email": "example@terraform.com",
+                  "role_ids": [
+                    "${data.incapsula_account_roles.roles.map[\"Sample Role 1\"]}"
+                  ]
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+        argumentDocs:
+            account_id: "- (Required) Numeric identifier of the account to operate on. \nUsing reference to account datasource"
+            email: '- (Required) The user email. This attribute cannot be updated.'
+            first_name: '- (Optional) The user''s first name. This attribute cannot be updated.'
+            id: '- Unique identifier in the API for the account user.'
+            last_name: '- (Optional) The user''s last name. This attribute cannot be updated.'
+            role_ids: "- (Optional) List of role ids to be associated with the user. \nDefault value is an empty list (user with no roles)."
+        importStatements: []
+    incapsula_api_security_api_config:
+        subCategory: Provider Reference
+        description: Provides a Incapsula API Security API Config resource.
+        name: incapsula_api_security_api_config
+        title: incapsula_api_security_api_config
+        examples:
+            - name: demo-terraform-api-security-api-config
+              manifest: |-
+                {
+                  "api_specification": "${file(\"path/to/your/swagger/file.yaml\")}",
+                  "base_path": "/base/path",
+                  "description": "your site API description",
+                  "invalid_method_violation_action": "BLOCK_USER",
+                  "invalid_param_name_violation_action": "ALERT_ONLY",
+                  "invalid_param_value_violation_action": "BLOCK_REQUEST",
+                  "invalid_url_violation_action": "IGNORE",
+                  "missing_param_violation_action": "BLOCK_IP",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            api_specification: '- (Required) The API specification document content. The supported format is OAS2 or OAS3.'
+            base_path: '- (Optional) Override the spec basePath / server base path with this value.'
+            description: '- (Optional) A description that will help recognize the API in the dashboard.'
+            host_name: '- The API''s host name'
+            id: '- Unique identifier in the API for the API Security Site Configuration.'
+            invalid_method_violation_action: |-
+                - (Optional) The action taken when an invalid method Violation occurs. Possible
+                values:
+                ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the
+                action from parent object.
+            invalid_param_name_violation_action: parameter is currently not supported. Please do not use/change value.
+            invalid_param_value_violation_action: |-
+                - (Optional) The action taken when an invalid parameter value Violation occurs.
+                Assigning DEFAULT will inherit the action from parent object. Possible values: ALERT_ONLY, BLOCK_REQUEST
+                , BLOCK_USER, BLOCK_IP, IGNORE,DEFAULT. Assigning DEFAULT will inherit the action from parent object.
+            invalid_url_violation_action: |-
+                - (Optional) The action taken when an invalid URL Violation occurs. Possible values:
+                ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the
+                action from parent object.
+            last_modified: '- (Optional) The last modified timestamp.'
+            missing_param_violation_action: |-
+                - (Optional) The action taken when a missing parameter Violation occurs. Possible
+                values:
+                ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE,DEFAULT. Assigning DEFAULT will inherit the
+                action from parent object.
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_api_security_endpoint_config:
+        subCategory: Provider Reference
+        description: Provides a Incapsula API Security Endpoint Config resource.
+        name: incapsula_api_security_endpoint_config
+        title: incapsula_api_security_endpoint_config
+        examples:
+            - name: demo-api-security-endpoint-config
+              manifest: |-
+                {
+                  "api_id": "${incapsula_api_security_api_config.demo_api_security_api_config.id}",
+                  "invalid_param_name_violation_action": "BLOCK_REQUEST",
+                  "invalid_param_value_violation_action": "ALERT_ONLY",
+                  "method": "GET",
+                  "missing_param_violation_action": "BLOCK_IP",
+                  "path": "/endpoint/unit/{id}"
+                }
+              references:
+                api_id: incapsula_api_security_api_config.demo_api_security_api_config.id
+        argumentDocs:
+            api_id: '- (Required) Numeric identifier of the API Security API Configuration to operate on.'
+            id: '- Unique identifier of the Endpoint for the API Security Endpoint Configuration.'
+            invalid_param_name_violation_action: parameter is currently not supported. Please do not use/change value.
+            invalid_param_value_violation_action: |-
+                - (Optional) The action taken when an invalid parameter value Violation occurs.
+                Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT
+                will inherit the action from parent object.
+            method: '- (Required) HTTP method that describes a specific Endpoint.'
+            missing_param_violation_action: |-
+                - (Optional) The action taken when a missing parameter Violation occurs. Possible
+                values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit
+                the action from parent object.
+            path: '- (Required) An URL path of specific Endpoint.'
+        importStatements: []
+    incapsula_api_security_site_config:
+        subCategory: Provider Reference
+        description: Provides a Incapsula API Security Site Config resource.
+        name: incapsula_api_security_site_config
+        title: incapsula_api_security_site_config
+        examples:
+            - name: demo-terraform-api-security-site-config
+              manifest: |-
+                {
+                  "invalid_method_violation_action": "BLOCK_REQUEST",
+                  "invalid_param_name_violation_action": "ALERT_ONLY",
+                  "invalid_param_value_violation_action": "IGNORE",
+                  "invalid_url_violation_action": "BLOCK_IP",
+                  "is_api_only_site": true,
+                  "is_automatic_discovery_api_integration_enabled": false,
+                  "missing_param_violation_action": "BLOCK_IP",
+                  "non_api_request_violation_action": "ALERT_ONLY",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            id: '- Unique identifier in the API for the API Security Site Configuration.'
+            invalid_method_violation_action: |-
+                - (Optional) The action taken when an invalid method Violation occurs. Possible
+                values: ALERT_ONLY (default value), BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.
+            invalid_param_name_violation_action: |-
+                - (Optional) The action taken when an invalid parameter value Violation occurs.
+                Possible values: ALERT_ONLY (default value), BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.
+            invalid_param_value_violation_action: |-
+                - (Optional) The action taken when an invalid parameter value Violation occurs.
+                Possible values: ALERT_ONLY (default value), BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.
+            invalid_url_violation_action: |-
+                - (Optional) The action taken when an invalid URL Violation occurs. Possible
+                values: ALERT_ONLY (default value), BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.
+            is_api_only_site: |-
+                - (Optional) Apply positive security model for all traffic on the site. Applying the positive
+                security model for all traffic on the site may lead to undesired request blocking.
+            is_automatic_discovery_api_integration_enabled: |-
+                - (Optional) Parameter shows whether automatic API discovery API
+                Integration is enabled. This field should not be set if API Security Add-On subscription is not available.
+            last_modified: '- The last modified timestamp.'
+            missing_param_violation_action: |-
+                - (Optional) The action taken when a missing parameter Violation occurs. Possible
+                values: ALERT_ONLY (default value), BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.
+            non_api_request_violation_action: |-
+                - (Optional) Action to be taken for traffic on the site that does not target the
+                uploaded APIs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE. This parameter is required
+                when is_api_only_site is set true. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER
+                , BLOCK_IP, IGNORE.
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_application_delivery:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Application Delivery resource.
+        name: incapsula_application_delivery
+        title: incapsula_application_delivery
+        examples:
+            - name: example_application_delivery
+              manifest: |-
+                {
+                  "aggressive_compression": true,
+                  "compress_jpeg": false,
+                  "compress_png": true,
+                  "compression_type": "GZIP",
+                  "default_error_page_template": "\u003chtml\u003e\u003cbody\u003e\u003ch1\u003e$TITLE$\u003c/h1\u003e\u003cp\u003e$BODY$\u003c/p\u003e\u003cdiv\u003e1\u003c/div\u003e\u003c/body\u003e\u003c/html\u003e",
+                  "enable_http2": false,
+                  "error_access_denied": "\u003chtml\u003e\u003cbody\u003e\u003ch1\u003e$TITLE$\u003c/h1\u003e\u003cp\u003e$BODY$\u003c/p\u003e\u003cdiv\u003e1\u003c/div\u003e\u003c/body\u003e\u003c/html\u003e",
+                  "error_connection_failed": "${file(\"error_page_example.txt\")}",
+                  "file_compression": true,
+                  "http2_to_origin": false,
+                  "minify_css": true,
+                  "minify_js": true,
+                  "minify_static_html": false,
+                  "origin_connection_reuse": false,
+                  "port_to": 225,
+                  "progressive_image_rendering": true,
+                  "redirect_http_to_https": false,
+                  "redirect_naked_to_full": false,
+                  "site_id": "${incapsula_site.testacc-terraform-site.id}",
+                  "ssl_port_to": 555,
+                  "support_non_sni_clients": false,
+                  "tcp_pre_pooling": false
+                }
+              references:
+                site_id: incapsula_site.testacc-terraform-site.id
+        argumentDocs:
+            aggressive_compression: '- (Optional) A more aggressive method of compression is applied with the goal of minimizing the image file size, possibly impacting the final quality of the image displayed. Applies to JPEG compression only. Default: false.'
+            compress_jpeg: '- (Optional) Compress JPEG images. Compression reduces download time by reducing the file size. Default: true'
+            compress_png: '- (Optional) Compress PNG images. Compression reduces download time by reducing the file size. PNG compression removes only image meta-data with no impact on quality. Default: true.'
+            compression_type: '- (Optional) BROTLI (recommended for more efficient compression). Default: GZIP'
+            default_error_page_template: '- (Optional) The default error page HTML template. $TITLE$ and $BODY$ placeholders are required.'
+            enable_http2: '- (Optional) Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1.'
+            error_abp_identification_failed: '- (Optional) The HTML template for ''ABP identification failed'' error. Only HTML elements located inside the body tag are supported. Set empty value to return to default.'
+            error_access_denied: '- (Optional) The HTML template for ''Access Denied'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_connection_failed: '- (Optional) The HTML template for ''Unable to connect to origin server'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_connection_timeout: '- (Optional) The HTML template for ''Connection Timeout'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_deny_and_captcha: '- (Optional) The HTML template for ''Initial connection denied - CAPTCHA required'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_no_ssl_config: '- (Optional) The HTML template for ''Site not configured for SSL'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_parse_req_error: '- (Optional) The HTML template for ''Unable to parse request'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_parse_resp_error: '- (Optional) The HTML template for ''Unable to parse response'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            error_ssl_failed: '- (Optional) The HTML template for ''Unable to establish SSL connection'' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.'
+            file_compression: '- (Optional) When this option is enabled, files such as JavaScript, CSS and HTML are dynamically compressed using the selected format as they are transferred. They are automatically unzipped within the browser. If Brotli is not supported by the browser, files are automatically sent in Gzip. Default: true'
+            http2_to_origin: '- (Optional) Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.)'
+            id: '- Unique identifier in the API for the application delivery configuration. The id is identical to Site id.'
+            minify_css: '- (Optional) Content minification can applied only to cached Javascript, CSS and HTML content. Default: true.'
+            minify_js: '- (Optional) Minify JavaScript. Minification removes characters that are not necessary for rendering the page, such as whitespace and comments. This makes the files smaller and therefore reduces their access time. Minification has no impact on the functionality of the Javascript, CSS, and HTML files. Default: true'
+            minify_static_html: '- (Optional) Minify static HTML. Default: true.'
+            origin_connection_reuse: '- (Optional) TCP connections that are opened for a client request remain open for a short time to handle additional requests that may arrive. Default: true'
+            port_to: '- (Optional) The port number.'
+            progressive_image_rendering: '- (Optional) The image is rendered with progressively finer resolution, potentially causing a pixelated effect until the final image is rendered with no loss of quality. This option reduces page load times and allows images to gradually load after the page is rendered. Default: false.'
+            redirect_http_to_https: '- (Optional) Sites that require an HTTPS connection force all HTTP requests to be redirected to HTTPS. This option is displayed only for an SSL site. Default: false'
+            redirect_naked_to_full: '- (Optional) Redirect all visitors to your site’s full domain (which includes www). This option is displayed only for a naked domain. Default: false'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            ssl_port_to: '- (Optional) The port number to rewrite default SSL port to.'
+            support_non_sni_clients: '- (Optional) By default, non-SNI clients are supported. Disable this option to block non-SNI clients. Default: true'
+            tcp_pre_pooling: '- (Optional) Maintain a set of idle TCP connections to the origin server to eliminate the latency associated with opening new connections or new requests (TCP handshake). Default: true'
+        importStatements: []
+    incapsula_ato_endpoint_mitigation_configuration:
+        subCategory: Provider Reference
+        description: Provides an Incapsula ATO endpoint mitigation resource.
+        name: incapsula_ato_endpoint_mitigation_configuration
+        title: incapsula_ato_endpoint_mitigation_configuration
+        examples:
+            - name: demo-terraform-ato-endpoint-mitigation-configuration
+              manifest: |-
+                {
+                  "account_id": "${incapsula_site.example-site.account_id}",
+                  "endpoint_id": "5001",
+                  "mitigation_action_for_high_risk": "BLOCK",
+                  "mitigation_action_for_low_risk": "NONE",
+                  "mitigation_action_for_medium_risk": "BLOCK",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                account_id: incapsula_site.example-site.account_id
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            account_id: '- (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the api ID'
+            endpoint_id: '- (Required) string, Endpoint ID associated with this request.'
+            mitigation_action_for_high_risk: '- (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.'
+            mitigation_action_for_low_risk: '- (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.'
+            mitigation_action_for_medium_risk: '- (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_ato_site_allowlist_configuration:
+        subCategory: Provider Reference
+        description: Provides an Incapsula ATO site allowlist configuration resource.
+        name: incapsula_ato_site_allowlist_configuration
+        title: incapsula_ato_site_allowlist
+        examples:
+            - name: demo-terraform-ato-site-allowlist-configuration
+              manifest: |-
+                {
+                  "account_id": "${incapsula_site.example-site.account_id}",
+                  "allowlist": [
+                    {
+                      "desc": "Test IP 1",
+                      "ip": "192.10.20.0",
+                      "mask": "24"
+                    },
+                    {
+                      "desc": "Test IP 2",
+                      "ip": "192.10.20.1",
+                      "mask": "8"
+                    }
+                  ],
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                account_id: incapsula_site.example-site.account_id
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            account_id: '- (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the api ID'
+            allowlist: '- (Required) Array of AllowlistItem objects'
+            desc: ':  (optional) string. Reason for adding this entry to the allowlist'
+            ip: ':  (required) string. IP address to exclude. You can use either IPv4 (e.g. 50.3.183.2) or normalized IPv6 representation (e.g. 2001:db8:0:0:1:0:0:1).'
+            mask: ':  (optional) string. IP subnet mask to use for excluding a range of IPs. This is the number of bits to use from the IP address as a subnet mask to apply on the source IP of incoming traffic.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_bots_configuration:
+        subCategory: Provider Reference
+        description: Provides a Incapsula BOT Access Control Configuration resource.
+        name: incapsula_bots_configuration
+        title: incapsula_bots_configuration
+        examples:
+            - name: example-basic-bots-configuration
+              manifest: |-
+                {
+                  "bad_bots": [
+                    1,
+                    62,
+                    245,
+                    18
+                  ],
+                  "canceled_good_bots": [
+                    6,
+                    17
+                  ],
+                  "site_id": "${incapsula_site.example-basic-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-basic-site.id
+            - name: example-basic-bots-configuration
+              manifest: |-
+                {
+                  "bad_bots": [
+                    "${data.incapsula_client_apps_data.client_apps_bad_bots.map[\"Google Translate\"]}",
+                    "${data.incapsula_client_apps_data.client_apps_bad_bots.map[\"Googlebot\"]}"
+                  ],
+                  "canceled_good_bots": "${data.incapsula_client_apps_data.client_apps_canceled_good_bots.ids}",
+                  "site_id": "${incapsula_site.example-basic-site.id}"
+                }
+              references:
+                canceled_good_bots: data.incapsula_client_apps_data.client_apps_canceled_good_bots.ids
+                site_id: incapsula_site.example-basic-site.id
+            - name: example-basic-bots-configuration
+              manifest: |-
+                {
+                  "bad_bots": [
+                    "${data.incapsula_client_apps_data.client_apps_bad_bots.map[\"Google Translate\"]}",
+                    "${data.incapsula_client_apps_data.client_apps_bad_bots.map[\"Googlebot\"]}",
+                    530,
+                    531,
+                    537
+                  ],
+                  "canceled_good_bots": [
+                    6,
+                    17
+                  ],
+                  "site_id": "${incapsula_site.example-basic-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-basic-site.id
+        argumentDocs:
+            bad_bots: '- (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots'
+            canceled_good_bots: '- (Optional) List of bot IDs taken from Imperva’s predefined list of bad bots'
+            id: '- Unique identifier in the API for the bots configuration.'
+            ids: '- Contains the Ids of each Client Application name set in filter argument (if set in the data source)'
+            map: '- Contains all the Client Application (names to ids map)'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_cache_rule:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Cache Rule resource.
+        name: incapsula_cache_rule
+        title: incapsula_cache_rule
+        examples:
+            - name: example-incap-cache-rule
+              manifest: |-
+                {
+                  "action": "HTTP_CACHE_MAKE_STATIC",
+                  "enabled": true,
+                  "filter": "isMobile == Yes",
+                  "name": "Example cache rule",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "ttl": 3600
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            action: '- (Required) Rule action. See the detailed descriptions in the API documentation. Possible values: HTTP_CACHE_MAKE_STATIC, HTTP_CACHE_CLIENT_CACHE_CTL, HTTP_CACHE_FORCE_UNCACHEABLE, HTTP_CACHE_ADD_TAG, HTTP_CACHE_DIFFERENTIATE_SSL, HTTP_CACHE_DIFFERENTIATE_BY_HEADER, HTTP_CACHE_DIFFERENTIATE_BY_COOKIE, HTTP_CACHE_DIFFERENTIATE_BY_GEO, HTTP_CACHE_IGNORE_PARAMS, HTTP_CACHE_ENRICH_CACHE_KEY, HTTP_CACHE_FORCE_VALIDATION, HTTP_CACHE_IGNORE_AUTH_HEADER.'
+            differentiate_by_value: '- (Optional) Value to differentiate resources by. Relevant for HTTP_CACHE_DIFFERENTIATE_BY_HEADER, HTTP_CACHE_DIFFERENTIATE_BY_COOKIE and HTTP_CACHE_DIFFERENTIATE_BY_GEO actions.'
+            enabled: '- (Required) Boolean that specifies if the rule should be enabled.'
+            filter: '- (Required) The filter defines the conditions that trigger the rule action. If left empty, the rule is always run.'
+            id: '- Unique identifier in the API for the Cache Rule.'
+            ignored_params: '- (Optional) Parameters to ignore. Relevant for HTTP_CACHE_IGNORE_PARAMS action. An array containing ''*'' means all parameters are ignored.'
+            name: '- (Required) Rule name.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            text: '- (Optional) Tag name if action is HTTP_CACHE_ADD_TAG. Text to be added to the cache key as suffix if action is HTTP_CACHE_ENRICH_CACHE_KEY.'
+            ttl: '- (Optional) TTL in seconds. Relevant for HTTP_CACHE_MAKE_STATIC and HTTP_CACHE_CLIENT_CACHE_CTL actions.'
+        importStatements: []
+    incapsula_custom_certificate:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Custom Certificate resource.
+        name: incapsula_custom_certificate
+        title: incapsula_custom_certificate
+        examples:
+            - name: custom-certificate
+              manifest: |-
+                {
+                  "certificate": "${filebase64(\"${\"path/to/your/cert.crt\"}\")}",
+                  "passphrase": "yourpassphrase",
+                  "private_key": "${filebase64(\"${\"path/to/your/private_key.key\"}\")}",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            certificate: '- (Required) The certificate file in base64 format. You can use the Terraform HCL file directive to pull in the contents from a file. You can also inline the certificate in the configuration.'
+            id: '- At the moment, only one active certificate can be stored. This exported value is always set as 12345. This will be augmented in future versions of the API.'
+            input_hash: '- (Optional) Currently ignored. If terraform plan flags this field as changed, it means that any of: certificate, private_key, or passphrase has changed.'
+            passphrase: '- (Optional) The passphrase used to protect your SSL certificate.'
+            private_key: '- (Optional) The private key of the certificate in base64 format. Optional in case of PFX certificate file format.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_custom_hsm_certificate:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Custom HSM Certificate resource.
+        name: incapsula_custom_hsm_certificate
+        title: incapsula_custom_hsm_certificate
+        examples:
+            - name: hsm-custom-certificate-example
+              manifest: |-
+                {
+                  "api_detail": [
+                    {
+                      "api_id": "345345-dfg44534-d34534tdfg-dsf4435rg",
+                      "api_key": "Mdrghg56G5dfHER445hjy5Ghhfg5rth5435hkj3hgd8r7ty948rjslkfhiu4how3hrioeuhtiuer",
+                      "hostname": "api.amer.smartkey.io"
+                    }
+                  ],
+                  "certificate": "${filebase64(\"${\"path/to/your/cert.pem\"}\")}",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            api_id: '- The key ID. This is the UUID of the Fortanix security object.'
+            api_key: '- The API key. This is the REST API authentication key from the Fortanix application you created.'
+            certificate: '- (Required) The certificate file in base64 format. You can use the Terraform HCL file directive to pull in the contents from a file. You can also inline the certificate in the configuration.'
+            hostname: '- The hostname. This is the location of your assets in the HSM service. In this case, it''s the URI (host name) of the Fortanix region as it appears in the security object. For example, api.amer.smartkey.io.'
+            input_hash: '- (Optional) Currently ignored. If terraform plan flags this field as changed, it means that any of: certificate, site_id, or api_detail has changed.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_data_center:
+        subCategory: Deprecated
+        description: Provides a Incapsula Data Center resource.
+        name: incapsula_data_center
+        title: incapsula_data_center
+        examples:
+            - name: example-data-center
+              manifest: |-
+                {
+                  "is_content": "true",
+                  "name": "Example data center",
+                  "server_address": "8.8.4.4",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            id: '- Unique identifier in the API for the data center.'
+            is_content: '- (Optional) The data center will be available for specific resources (Forward Delivery Rules).'
+            is_enabled: '- (Optional) Enables the data center.'
+            name: '- (Required) The new data center''s name.'
+            server_address: '- (Required) The server''s address. Possible values: IP, CNAME.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_data_center_server:
+        subCategory: Deprecated
+        description: Provides a Incapsula Data Center Server resource.
+        name: incapsula_data_center_server
+        title: incapsula_data_center_server
+        examples:
+            - name: example-data-center-server
+              manifest: |-
+                {
+                  "dc_id": "${incapsula_data_center.example-data-center.id}",
+                  "is_enabled": "true",
+                  "server_address": "4.4.4.4",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                dc_id: incapsula_data_center.example-data-center.id
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            dc_id: '- (Required) Numeric identifier of the data center server to operate on.'
+            id: '- Unique identifier in the API for the data center server.'
+            is_enabled: '- (Optional) Enables the data center server.'
+            is_standby: '- (Optional) Set the server as Active (P0) or Standby (P1).'
+            server_address: '- (Optional) The server''s address.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_data_centers_configuration:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Data Centers Configuration resource.
+        name: incapsula_data_centers_configuration
+        title: incapsula_data_centers_configuration
+        examples:
+            - name: example-basic-data-centers-configuration
+              manifest: |-
+                {
+                  "data_center": [
+                    {
+                      "ip_mode": "MULTIPLE_IP",
+                      "name": "New DC",
+                      "origin_server": [
+                        {
+                          "address": "54.74.193.120",
+                          "is_active": true
+                        },
+                        {
+                          "address": "44.72.103.175",
+                          "is_active": false
+                        }
+                      ]
+                    }
+                  ],
+                  "site_id": "${incapsula_site.example-basic-site.id}",
+                  "site_topology": "SINGLE_DC"
+                }
+              references:
+                site_id: incapsula_site.example-basic-site.id
+            - name: example-geo-assigned-data-centers-configuration
+              manifest: |-
+                {
+                  "data_center": [
+                    {
+                      "ip_mode": "MULTIPLE_IP",
+                      "is_rest_of_the_world": true,
+                      "name": "Rest of the world DC",
+                      "origin_pop": "hkg",
+                      "origin_server": [
+                        {
+                          "address": "55.66.77.123",
+                          "is_active": true,
+                          "is_enabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "geo_locations": "AFRICA,EUROPE,ASIA",
+                      "name": "EMEA DC",
+                      "origin_pop": "lon",
+                      "origin_server": [
+                        {
+                          "address": "54.74.193.120",
+                          "is_active": true
+                        }
+                      ]
+                    },
+                    {
+                      "geo_locations": "US_EAST,US_WEST",
+                      "name": "Americas DC",
+                      "origin_pop": "iad",
+                      "origin_server": [
+                        {
+                          "address": "54.90.145.67",
+                          "is_active": true,
+                          "is_enabled": true
+                        }
+                      ]
+                    }
+                  ],
+                  "is_persistent": true,
+                  "site_id": "${incapsula_site.example-geo-assigned-site.id}",
+                  "site_lb_algorithm": "GEO_PREFERRED",
+                  "site_topology": "MULTIPLE_DC"
+                }
+              references:
+                site_id: incapsula_site.example-geo-assigned-site.id
+            - name: example-weighted-data-centers-configuration
+              manifest: |-
+                {
+                  "data_center": [
+                    {
+                      "is_content": true,
+                      "name": "AD Forward Rules DC",
+                      "origin_server": [
+                        {
+                          "address": "55.66.77.123"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Powerful DC",
+                      "origin_server": [
+                        {
+                          "address": "54.74.193.120",
+                          "is_active": true
+                        }
+                      ],
+                      "weight": 67
+                    },
+                    {
+                      "dc_lb_algorithm": "WEIGHTED",
+                      "name": "Slagish DC",
+                      "origin_server": [
+                        {
+                          "address": "54.90.145.67",
+                          "weight": 50
+                        },
+                        {
+                          "address": "54.90.145.68",
+                          "weight": 30
+                        },
+                        {
+                          "address": "54.90.145.69",
+                          "weight": 20
+                        }
+                      ],
+                      "weight": 33
+                    }
+                  ],
+                  "is_persistent": true,
+                  "site_id": "${incapsula_site.example-weighted-site.id}",
+                  "site_lb_algorithm": "WEIGHTED_LB",
+                  "site_topology": "MULTIPLE_DC"
+                }
+              references:
+                site_id: incapsula_site.example-weighted-site.id
+        argumentDocs:
+            address: '- (Required) Server Address. If Data Center''s ip_mode = ''SINGLE_IP'', then a valid IP address must be specified. Otherwise, Host / DNS name can be specified as well.'
+            dc_lb_algorithm: '- (Optional) How to load balance between the servers of this data center. One of: LB_LEAST_PENDING_REQUESTS (the default), LB_LEAST_OPEN_CONNECTIONS, LB_SOURCE_IP_HASH, RANDOM, WEIGHTED.'
+            fail_over_required_monitors: '- (Optional) How many Imperva PoPs should assess Data Center as down before failover is performed. One of: ONE, MANY, MOST, ALL.'
+            geo_locations: '- (Optional) Comma separated list of geo regions that this data center will serve. Mandatory if site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED. E.g. "ASIA,AFRICA". Allowed regions: EUROPE, AUSTRALIA, US_EAST, US_WEST, AFRICA, ASIA, SOUTH_AMERICA, NORTH_AMERICA.'
+            id: '- Unique identifier in the API for the data centers configuration. The id is identical to Site id.'
+            ip_mode: '- (Optional) Load-balancing mode. Possible values:'
+            is_active: '- (Optional) When true (the default), this Data Center is active. When false, this Data center will Standby. Automatic failover will happen only if all active Data Centers are not available.'
+            is_content: '- (Optional) When true, this Data Center will only serve requests that were routed using AD Forward rules. If true, it must also be enabled.'
+            is_enabled: '- (Optional) When true (the default), this Data Center is enabled. I.e. can serve requests.'
+            is_persistent: '- (Optional) When true (the default) our proxy servers will maintain session stickiness to origin servers by a cookie.'
+            is_rest_of_the_world: '- (Optional) When true and site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED, this data center will handle traffic from any region that is not assigned to a specific data center. Exactly one data center must have is_rest_of_the_world = true.'
+            kickstart_password: '- (Optional) User name, if required by the kickstart URL.'
+            kickstart_url: '- (Optional) The URL that will be sent to the standby server when Imperva performs failover based on our monitoring. E.g. "https://www.example.com/kickStart".'
+            kickstart_user: '- (Optional) User name, if required by the kickstart URL.'
+            min_available_servers_for_dc_up: '- (Optional) The minimal number of available data center''s servers to consider that data center as UP. Default: 1.'
+            name: '- (Required) Data Center Name. Must be unique within a Site.'
+            origin_pop: '- (Optional) The ID of the PoP that serves as an access point between Imperva and the customer’s origin server. E.g. "lax", for Los Angeles. When not specified, all Imperva PoPs can send traffic to this data center. The list of available PoPs is documented at: https://docs.imperva.com/bundle/cloud-application-security/page/more/pops.htm.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            site_lb_algorithm: '- (Optional) How to load balance between multiple Data Centers. One of: BEST_CONNECTION_TIME, GEO_PREFERRED, GEO_REQUIRED, WEIGHTED_LB.'
+            site_topology: '- (Optional) One of: SINGLE_SERVER (no failover), SINGLE_DC (allows failover and LB), or MULTIPLE_DC (allows also Geo and/or AD Forward rules assignment)'
+            web_servers_per_server: '- (Optional) When IP mode = SINGLE_IP, number of web servers (processes) per server. Each web server listens to different port. E.g. when web_servers_per_server = 5, HTTP traffic will use ports 80-84 while HTTPS traffic will use ports 443-447. Default: 1.'
+            weight: '- (Optional) When site_lb_algorithm = WEIGHTED_LB, the weight in percentage of this Data Center. Then, total weight of all Data Centers must be 100.'
+        importStatements: []
+    incapsula_incap_rule:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Rule resource.
+        name: incapsula_incap_rule
+        title: incapsula_incap_rule
+        examples:
+            - name: example-incap-rule-alert
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_ALERT",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule alert",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-require-js-support
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_INTRUSIVE_HTML",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule require javascript support 3",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-block-ip
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_BLOCK_IP",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule block ip",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-block-request
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_BLOCK",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule block request",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-block-session
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_BLOCK_USER",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule block session",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-delete-cookie
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_DELETE_COOKIE",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule delete cookie",
+                  "rewrite_name": "my_test_header",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-delete-header
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_DELETE_HEADER",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule delete header",
+                  "rewrite_name": "my_test_header",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-fwd-to-data-center
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_FORWARD_TO_DC",
+                  "dc_id": "${data.incapsula_data_center.example_content_dc.id}",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule forward to data center",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                dc_id: data.incapsula_data_center.example_content_dc.id
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-redirect
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_REDIRECT",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "from": "https://site1.com/url1",
+                  "name": "Example incap rule redirect",
+                  "response_code": "302",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "to": "https://site2.com/url2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-require-cookie-support
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_RETRY",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "name": "Example incap rule require cookie support",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-rewrite-cookie
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_REWRITE_COOKIE",
+                  "add_missing": "true",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "from": "some_optional_value",
+                  "name": "Example incap rule rewrite cookie",
+                  "rewrite_existing": "true",
+                  "rewrite_name": "my_cookie_name",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "to": "some_new_value"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-rewrite-header
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_REWRITE_HEADER",
+                  "add_missing": "true",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "from": "some_optional_value",
+                  "name": "Example incap rule rewrite header",
+                  "rewrite_existing": "true",
+                  "rewrite_name": "my_test_header",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "to": "some_new_value"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-incap-rule-rewrite-url
+              manifest: |-
+                {
+                  "action": "RULE_ACTION_REWRITE_URL",
+                  "enabled": true,
+                  "filter": "Full-URL == \"/someurl\"",
+                  "from": "*",
+                  "name": "ExampleRewriteURL",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "to": "/redirect"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            action: '- (Required) Rule action. See the detailed descriptions in the API documentation. Possible values: RULE_ACTION_REDIRECT, RULE_ACTION_SIMPLIFIED_REDIRECT, RULE_ACTION_REWRITE_URL, RULE_ACTION_REWRITE_HEADER, RULE_ACTION_REWRITE_COOKIE, RULE_ACTION_DELETE_HEADER, RULE_ACTION_DELETE_COOKIE, RULE_ACTION_RESPONSE_REWRITE_HEADER, RULE_ACTION_RESPONSE_DELETE_HEADER, RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE, RULE_ACTION_FORWARD_TO_DC, RULE_ACTION_ALERT, RULE_ACTION_BLOCK, RULE_ACTION_BLOCK_USER, RULE_ACTION_BLOCK_IP, RULE_ACTION_RETRY, RULE_ACTION_INTRUSIVE_HTML, RULE_ACTION_CAPTCHA, RULE_ACTION_RATE, RULE_ACTION_CUSTOM_ERROR_RESPONSE, RULE_ACTION_FORWARD_TO_PORT.'
+            add_missing: '- (Optional) Add cookie or header if it doesn''t exist (Rewrite cookie rule only).'
+            dc_id: '- (Optional) Data center to forward request to. Applies only for RULE_ACTION_FORWARD_TO_DC.'
+            enabled: '- (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.'
+            error_response_data: '- (Optional) The response returned when the request matches the filter and is blocked. Applies only for RULE_ACTION_CUSTOM_ERROR_RESPONSE.'
+            error_response_format: '- (Optional) The format of the given error response in the error_response_data field. Applies only for RULE_ACTION_CUSTOM_ERROR_RESPONSE. Possible values: json, xml.'
+            error_type: '- (Optional) The error that triggers the rule. error.type.all triggers the rule regardless of the error type. Applies only for RULE_ACTION_CUSTOM_ERROR_RESPONSE. Possible values: error.type.all, error.type.connection_timeout, error.type.access_denied, error.type.parse_req_error, error.type.parse_resp_error, error.type.connection_failed, error.type.deny_and_retry, error.type.ssl_failed, error.type.deny_and_captcha, error.type.2fa_required, error.type.no_ssl_config, error.type.no_ipv6_config.'
+            filter: '- (Required) The filter defines the conditions that trigger the rule action. For action RULE_ACTION_SIMPLIFIED_REDIRECT filter is not relevant. For other actions, if left empty, the rule is always run.'
+            from: '- (Optional) Pattern to rewrite. For RULE_ACTION_REWRITE_URL - Url to rewrite. For RULE_ACTION_REWRITE_HEADER and RULE_ACTION_RESPONSE_REWRITE_HEADER - Header value to rewrite. For RULE_ACTION_REWRITE_COOKIE - Cookie value to rewrite.'
+            id: '- Unique identifier in the API for the Incap Rule.'
+            multiple_deletions: '- (Optional) Delete multiple header occurrences. Applies only to rules using RULE_ACTION_DELETE_HEADER and RULE_ACTION_RESPONSE_DELETE_HEADER.'
+            name: '- (Required) Rule name.'
+            overrideWafAction: '- (Optional) The response returned when the request matches the filter and is blocked. Applies only for RULE_ACTION_CUSTOM_ERROR_RESPONSE.'
+            overrideWafRule: '- (Optional) The action for the override rule. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.'
+            port_forwarding_context: '- (Optional) Context for port forwarding. "Use Port Value" or "Use Header Name". Applies only for RULE_ACTION_FORWARD_TO_PORT.'
+            port_forwarding_value: '- (Optional) Port number or header name for port forwarding. Applies only for RULE_ACTION_FORWARD_TO_PORT.'
+            rate_context: '- (Optional) The context of the rate counter. Possible values IP or Session. Applies only to rules using RULE_ACTION_RATE.'
+            rate_interval: '- (Optional) The interval in seconds of the rate counter. Possible values is a multiple of 10; minimum 10 and maximum 300. Applies only to rules using RULE_ACTION_RATE.'
+            response_code: '- (Optional) For RULE_ACTION_REDIRECT or RULE_ACTION_SIMPLIFIED_REDIRECT rule''s response code, valid values are 302, 301, 303, 307, 308. For RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE rule''s response code, valid values are all 3-digits numbers. For RULE_ACTION_CUSTOM_ERROR_RESPONSE, valid values are 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 419, 420, 422, 423, 424, 500, 501, 502, 503, 504, 505, 507.'
+            rewrite_existing: '- (Optional) Rewrite cookie or header if it exists.'
+            rewrite_name: '- (Optional) Name of cookie or header to rewrite. Applies only for RULE_ACTION_REWRITE_COOKIE, RULE_ACTION_REWRITE_HEADER and RULE_ACTION_RESPONSE_REWRITE_HEADER.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            to: '- (Optional) Pattern to change to. RULE_ACTION_REWRITE_URL - Url to change to. RULE_ACTION_REWRITE_HEADER and RULE_ACTION_RESPONSE_REWRITE_HEADER - Header value to change to. RULE_ACTION_REWRITE_COOKIE - Cookie value to change to.'
+        importStatements: []
+    incapsula_mtls_client_to_imperva_ca_certificate:
+        subCategory: Provider Reference
+        description: Provides a Mutual TLS Client to Imperva CA Certificate resource.
+        name: incapsula_mtls_client_to_imperva_ca_certificate
+        title: incapsula_mtls_client_to_imperva_ca_certificate
+        examples:
+            - name: client_ca_certificate_1
+              manifest: |-
+                {
+                  "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                  "certificate": "${filebase64(\"./ca_certificate.pem\")}",
+                  "certificate_name": "pem certificate example"
+                }
+              references:
+                account_id: data.incapsula_account_data.account_data.current_account
+            - name: client_ca_certificate_1
+              manifest: |-
+                {
+                  "account_id": "${incapsula_subaccount.example-subaccount.id}",
+                  "certificate": "${filebase64(\"./ca_certificate.pem\")}",
+                  "certificate_name": "pem certificate example"
+                }
+              references:
+                account_id: incapsula_subaccount.example-subaccount.id
+              dependencies:
+                incapsula_subaccount.example-subaccount: |-
+                    {
+                      "log_level": "full",
+                      "logs_account_id": "789",
+                      "sub_account_name": "Example SubAccount"
+                    }
+            - name: client_ca_certificate_1
+              manifest: |-
+                {
+                  "account_id": "${incapsula_subaccount.example-subaccount.id}",
+                  "certificate": "Exported Certificate - data placeholder",
+                  "certificate_name": "pem certificate example"
+                }
+              references:
+                account_id: incapsula_subaccount.example-subaccount.id
+        argumentDocs:
+            account_id: '- (Required) Numeric identifier of the account to operate on.'
+            certificate: |-
+                - (Required) Your mTLS client certificate file. Supported formats: PEM, CRT, CER and CA.
+                You can use the Terraform HCL filebase64 directive to pull in the contents from a file. You can also embed the certificate in the configuration.
+            certificate_name: '- (Optional) A descriptive name for your mTLS Client Certificate.'
+            id: '- Unique identifier of the Mutual TLS Imperva to Origin Certificate.'
+        importStatements: []
+    incapsula_mtls_client_to_imperva_ca_certificate_site_association:
+        subCategory: Provider Reference
+        description: Provides an Incapsula Site to Mutual TLS Client to Imperva CA Certificate Association resource.
+        name: incapsula_mtls_client_to_imperva_ca_certificate_site_association
+        title: incapsula_mtls_client_to_imperva_ca_certificate_site_association
+        examples:
+            - name: site_certificate_association_1
+              manifest: |-
+                {
+                  "certificate_id": "${incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1.id}",
+                  "site_id": "${incapsula_site.example-site-1.id}"
+                }
+              references:
+                certificate_id: incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1.id
+                site_id: incapsula_site.example-site-1.id
+              dependencies:
+                incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "certificate": "${filebase64(\"./cert1.der\")}",
+                      "certificate_name": "der certificate example 1"
+                    }
+                incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "certificate": "${filebase64(\"./cert2.pfx\")}",
+                      "certificate_name": "pfx certificate example 2"
+                    }
+                incapsula_site.example-site-1: |-
+                    {
+                      "domain": "examplesite.com"
+                    }
+            - name: site_certificate_association_2
+              manifest: |-
+                {
+                  "certificate_id": "${incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2.id}",
+                  "site_id": "${incapsula_site.example-site-1.id}"
+                }
+              references:
+                certificate_id: incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2.id
+                site_id: incapsula_site.example-site-1.id
+              dependencies:
+                incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "certificate": "${filebase64(\"./cert1.der\")}",
+                      "certificate_name": "der certificate example 1"
+                    }
+                incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2: |-
+                    {
+                      "account_id": "${data.incapsula_account_data.account_data.current_account}",
+                      "certificate": "${filebase64(\"./cert2.pfx\")}",
+                      "certificate_name": "pfx certificate example 2"
+                    }
+                incapsula_site.example-site-1: |-
+                    {
+                      "domain": "examplesite.com"
+                    }
+        argumentDocs:
+            certificate_id: '- (Required) The Mutual TLS Client to Imperva CA Certificate ID.'
+            id: '- Incapsula Mutual TLS Client to Imperva CA Certificate Association ID. The ID is composed of 2 parts: site_id and certificate_id separated by a slash.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_mtls_client_to_imperva_ca_certificate_site_settings:
+        subCategory: Provider Reference
+        description: Provides an Incapsula MTLS Client to Imperva Certificate Site Settings resource.
+        name: incapsula_mtls_client_to_imperva_ca_certificate_site_settings
+        title: incapsula_mtls_client_to_imperva_ca_certificate_site_settings
+        examples:
+            - name: demo_client_to_imperva_certificate_site_settings
+              manifest: |-
+                {
+                  "depends_on": [
+                    "${incapsula_mtls_client_to_imperva_ca_certificate_site_association.client_ca_certificate_site_association_1}",
+                    "${incapsula_mtls_client_to_imperva_ca_certificate_site_association.client_ca_certificate_site_association_2}"
+                  ],
+                  "fingerprints": [
+                    "fingerprint1",
+                    "fingerprint2"
+                  ],
+                  "forward_to_origin": true,
+                  "header_name": "header",
+                  "header_value": "SERIAL_NUMBER",
+                  "hosts": [
+                    "host.com",
+                    "site.ca"
+                  ],
+                  "is_disable_session_resumption": true,
+                  "is_hosts_exception": true,
+                  "is_ports_exception": false,
+                  "ports": [
+                    100,
+                    120,
+                    292
+                  ],
+                  "require_client_certificate": true,
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            fingerprints: '- (Optional) Permitted client certificate fingerprints. If left empty, all fingerprints are permitted. Default - empty list.'
+            forward_to_origin: '- (Optional) When set to true, the contents specified in headerValue are sent to the origin server in the header specified by headerName. Default - false. If parameter is set to true, header_name and header_value are required.'
+            header_name: '- (Optional) The name of the header to send header content in. By default, the header name is ''clientCertificateInfo''. Specifying this parameter is relevant only if forward_to_origin is set to true. Default - clientCertificateInfo.'
+            header_value: '- (Optional) The content to send in the header specified by headerName. One of the following: FULL_CERT (for full certificate in Base64) COMMON_NAME (for certificate''s common name (CN)) FINGERPRINT (for the certificate fingerprints in SHA1) SERIAL_NUMBER (for the certificate''s serial number). This parameter is required if forward_to_origin is set to true. Default: FULL_CERT.'
+            hosts: '- (Optional) The hosts on which client certificate authentication is supported. If left empty, client certificates are supported on all hosts. Default - empty list.'
+            id: '- Value of Site ID in the Incapsula Mutual TLS Client to Imperva CA Certificate Site Settings.'
+            is_disable_session_resumption: '- (Optional) Disables SSL session resumption for site. Needed when Incapsula Client CA Certificate is needed only for specific hosts/ports and site have clients that reuse TLS session across different hosts/ports. Default - false.'
+            is_hosts_exception: '- (Optional) When set to true, client certificates are not supported on the hosts listed in the Hosts field (''blacklisted''). Default - false.'
+            is_ports_exception: '- (Optional) When set to true, client certificates are not supported on the ports listed in the Ports field (''blacklisted''). Default - false.'
+            ports: '- (Optional) The ports on which client certificate authentication is supported. If left empty, client certificates are supported on all ports. Default: empty list.'
+            require_client_certificate: '- (Optional) When set to true, the end user is required to present the client certificate in order to access the site. Default - false.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_notification_center_policy:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Notification Center Policy resource.
+        name: incapsula_notification_center_policy
+        title: incapsula_notification_center_policy
+        examples:
+            - name: notification-policy-subaccount
+              manifest: |-
+                {
+                  "account_id": 12345,
+                  "emailchannel_external_recipient_list": [
+                    "john.doe@company.com",
+                    "another.email@company.com"
+                  ],
+                  "emailchannel_user_recipient_list": [
+                    1111,
+                    2222
+                  ],
+                  "policy_name": "Terraform policy sub account",
+                  "policy_type": "SUB_ACCOUNT",
+                  "status": "ENABLE",
+                  "sub_account_list": [
+                    123456,
+                    "${incapsula_subaccount.tmp-subaccount.id}"
+                  ],
+                  "sub_category": "SITE_NOTIFICATIONS"
+                }
+            - name: notification-policy-account-with-assets
+              manifest: |-
+                {
+                  "account_id": 12345,
+                  "apply_to_new_assets": "FALSE",
+                  "asset": [
+                    {
+                      "asset_id": "${incapsula_site.tmp-site.id}",
+                      "asset_type": "SITE"
+                    },
+                    {
+                      "asset_id": 7999203,
+                      "asset_type": "SITE"
+                    }
+                  ],
+                  "emailchannel_external_recipient_list": [
+                    "john.doe@company.com",
+                    "another.exernal.email@company.com"
+                  ],
+                  "emailchannel_user_recipient_list": [
+                    1111,
+                    2222
+                  ],
+                  "policy_name": "Terraform policy account with assets",
+                  "policy_type": "ACCOUNT",
+                  "status": "ENABLE",
+                  "sub_category": "SITE_NOTIFICATIONS"
+                }
+              references:
+                asset.asset_id: incapsula_site.tmp-site.id
+            - name: notification-policy-account-without-assets
+              manifest: |-
+                {
+                  "account_id": 12345,
+                  "emailchannel_external_recipient_list": [
+                    "john.doe@company.com",
+                    "another.exernal.email@company.com"
+                  ],
+                  "emailchannel_user_recipient_list": [
+                    1111,
+                    2222
+                  ],
+                  "policy_name": "Terraform policy account without assets",
+                  "policy_type": "ACCOUNT",
+                  "status": "ENABLE",
+                  "sub_category": "ACCOUNT_NOTIFICATIONS"
+                }
+        argumentDocs:
+            account_id: '- (Required) Numeric identifier of the account to work on.'
+            apply_to_new_assets: |-
+                - (Optional) If value is TRUE, all newly onboarded assets are automatically added to the
+                notification policy's assets list. Possible values: TRUE, FALSE (default value).
+                We recommend always setting this field's value to FALSE, to disable automatic updates of assets on the policy, so you
+                have full control over your resources.
+            apply_to_new_sub_accounts: |-
+                - (Optional) If value is TRUE, all newly onboarded sub accounts are automatically added
+                to the notification policy's sub account list. Possible values: TRUE, FALSE (default value)
+                Relevant if the policy_type is SUB_ACCOUNT.
+                We recommend always setting this field's value to FALSE, to disable automatic updates of sub-accounts on the policy,
+                so you have full control over your resources.
+            asset_id: '- Numeric identifier of the asset.'
+            asset_type: |-
+                - Indicates the Imperva-protected entity that triggers the notification. Possible values: SITE, IP_RANGE, EDGE_IP, ORIGIN_CONNECTIVITY,
+                NETFLOW_EXPORTER, DOMAIN.
+            emailchannel_external_recipient_list: |-
+                - (Optional) List of email addresses (for recipients who are not Imperva users) to receive email notifications.
+                There must be at least one value in this list or in the emailchannel_user_recipient_list list.
+            emailchannel_user_recipient_list: |-
+                - (Optional) List of numeric identifiers of the users from the Imperva account
+                to receive emails notifications. There must be at least one value in this list or in the emailchannel_external_recipient_list list.
+            id: '- Unique identifier for the Notification Policy.'
+            policy_name: '- (Required) The name of the policy. Cannot contain special characters'
+            policy_type: |-
+                - (Optional) If the value is ACCOUNT, the policy will apply only to the current account that is
+                specified by the account_id. If the value is SUB_ACCOUNT the policy applies to the sub accounts only.
+                The parent account will receive notifications for activity in the sub accounts that are specified in the
+                sub_account_list parameter. This sub_account_list is available only in accounts that can contain sub accounts.
+                Possible values: ACCOUNT (default value), SUB_ACCOUNT.
+            status: |-
+                - (Optional) Indicates whether the policy is enabled or disabled. Possible
+                values: ENABLE (default value), DISABLE.
+            sub_account_list: |-
+                - (Optional) List of numeric identifiers of sub accounts of this account for which the parent account will
+                receive notifications. Should be set if the policy_type is SUB_ACCOUNT.
+            sub_category: |-
+                - (Required) The sub category of notifications that the policy will apply to. Possible
+                values: ACCOUNT_NOTIFICATIONS, SITE_NOTIFICATIONS, CERTIFICATE_MANAGEMENT, SUBSCRIPTION, SIEM_STORAGE,
+                WAF_ALERTS, WEBSITE_DDOS, WEBSITE_GROUP_DDOS, DNS_PROTECTION, INDIVIDUAL_IP_PROTECTION,
+                NETWORK_PROTECTION, NETWORK_CONNECTIVITY, NETWORK_MONITORING.
+        importStatements: []
+    incapsula_origin_pop:
+        subCategory: Deprecated
+        description: Provides a Incapsula Data Center Origin POP association resource.
+        name: incapsula_origin_pop
+        title: incapsula_origin_pop
+        examples:
+            - name: aws-east
+              manifest: |-
+                {
+                  "dc_id": "${incapsula_data_center.example-data-center.id}",
+                  "origin_pop": "iad",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                dc_id: incapsula_data_center.example-data-center.id
+                site_id: incapsula_site.example-site.id
+              dependencies:
+                incapsula_data_center.example-data-center: |-
+                    {
+                      "is_content": "true",
+                      "name": "Example data center",
+                      "server_address": "8.8.4.4",
+                      "site_id": "${incapsula_site.example-site.id}"
+                    }
+        argumentDocs:
+            dc_id: '- (Required) Numeric identifier of the data center.'
+            id: '- Unique identifier for the Origin POP association.'
+            origin_pop: '- (Required) The Origin POP code (must be lowercase), e.g: iad. Note, this field is create/update only. Reads are not supported as the API doesn''t exist yet. Note that drift may happen.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_policy:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Policy resource.
+        name: incapsula_policy
+        title: incapsula_policy
+        examples:
+            - name: example-whitelist-ip-policy
+              manifest: |-
+                {
+                  "description": "Example WHITELIST IP Policy description",
+                  "enabled": true,
+                  "name": "Example WHITELIST IP Policy",
+                  "policy_settings": "    [\n      {\n        \"settingsAction\": \"ALLOW\",\n        \"policySettingType\": \"IP\",\n        \"data\": {\n          \"ips\": [\n            \"1.2.3.4\"\n          ]\n        }\n      }\n    ]\n",
+                  "policy_type": "WHITELIST"
+                }
+            - name: example-acl-country-block-policy
+              manifest: |-
+                {
+                  "description": "EXAMPLE ACL Block Countries based on attack.",
+                  "enabled": true,
+                  "name": "${var.dynamic_country_block_policy_name}",
+                  "policy_settings": "${jsonencode(\n        [\n            {\n                data = {\n                    geo = {\n                        countries = var.countries\n                    }\n                }\n                policySettingType = \"GEO\"\n                settingsAction    = \"BLOCK\"\n            },\n        ]\n    )}",
+                  "policy_type": "ACL"
+                }
+              references:
+                name: var.dynamic_country_block_policy_name
+            - name: example-waf-rule-illegal-resource-access-policy
+              manifest: |-
+                {
+                  "enabled": true,
+                  "name": "Example WAF-RULE ILLEGAL RESOURCE ACCESS Policy",
+                  "policy_settings": "    [\n    {\n      \"settingsAction\": \"BLOCK\",\n      \"policySettingType\": \"REMOTE_FILE_INCLUSION\"\n\n    },\n    {\n      \"settingsAction\": \"BLOCK\",\n      \"policySettingType\": \"ILLEGAL_RESOURCE_ACCESS\",\n      \"policyDataExceptions\": [\n        {\n          \"data\": [\n            {\n              \"exceptionType\": \"URL\",\n              \"values\": [\n                \"/cmd.exe\"\n              ]\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"settingsAction\": \"BLOCK\",\n      \"policySettingType\": \"CROSS_SITE_SCRIPTING\"\n      \n    },\n    {\n      \"settingsAction\": \"BLOCK\",\n      \"policySettingType\": \"SQL_INJECTION\"\n      \n    }\n    ]\n",
+                  "policy_type": "WAF_RULES"
+                }
+        argumentDocs:
+            account_id: '- Account ID of the policy.'
+            description: '- (Optional) The policy description.'
+            enabled: '- (Required) Enables the policy.'
+            id: '- Unique identifier in the API for the policy.'
+            name: '- (Required) The policy name.'
+            policy_settings: |-
+                - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
+                Policy_settings internal values:
+                policySettingType: IP, GEO, URL
+                settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
+                policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
+                exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
+            policy_type: '- (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION).'
+        importStatements: []
+    incapsula_policy_asset_association:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Policy Asset Association resource.
+        name: incapsula_policy_asset_association
+        title: incapsula_policy_asset_association
+        examples:
+            - name: example-policy-asset-association
+              manifest: |-
+                {
+                  "asset_id": "${incapsula_site.example-site-dns.id}",
+                  "asset_type": "WEBSITE",
+                  "policy_id": "${incapsula_policy.example-policy.id}"
+                }
+              references:
+                asset_id: incapsula_site.example-site-dns.id
+                policy_id: incapsula_policy.example-policy.id
+        argumentDocs:
+            account_id: '- (Optional) The account ID of the asset. Set this field if the asset''s account is different than the account used in the credentials. For example, when setting a sub account’s asset association from the parent account.'
+            asset_id: '- (Required) The Asset ID for the asset association. Only type of asset supported at the moment is site.'
+            asset_type: '- (Required) The Policy type for the asset association. Only value at the moment is WEBSITE.'
+            id: '- Unique identifier in the API for the policy asset association.'
+            policy_id: '- (Required) The Policy ID for the asset association.'
+        importStatements: []
+    incapsula_security_rule_exception:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Security Rule Exception resource.
+        name: incapsula_security_rule_exception
+        title: incapsula_security_rule_exception
+        examples:
+            - name: example-waf-backdoor-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "parameters": "myparam",
+                  "rule_id": "api.threats.backdoor",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2",
+                  "user_agents": "myUserAgent"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-bot_access-control-rule-exception
+              manifest: |-
+                {
+                  "client_app_types": "DataScraper,",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "rule_id": "api.threats.bot_access_control",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2",
+                  "user_agents": "myUserAgent"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-cross-site-scripting-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "parameters": "myparam",
+                  "rule_id": "api.threats.cross_site_scripting",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-ddos-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "rule_id": "api.threats.ddos",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-illegal-resource-access-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "parameters": "myparam",
+                  "rule_id": "api.threats.illegal_resource_access",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-remote-file-inclusion-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "parameters": "myparam",
+                  "rule_id": "api.threats.remote_file_inclusion",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2",
+                  "user_agents": "myUserAgent"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-sql-injection-rule-exception
+              manifest: |-
+                {
+                  "client_apps": "488,123",
+                  "continents": "NA,AF",
+                  "countries": "JM,US",
+                  "ips": "1.2.3.6,1.2.3.7",
+                  "rule_id": "api.threats.sql_injection",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "url_patterns": "EQUALS,CONTAINS",
+                  "urls": "/myurl,/myurl2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            client_app_types: '- (Optional) A comma separated list of client application types.'
+            client_apps: '- (Optional) A comma separated list of client application IDs.'
+            continents: '- (Optional) A comma separated list of continent codes.'
+            countries: '- (Optional) A comma separated list of country codes.'
+            id: '- Unique identifier in the API for the Rule Exception ID.'
+            ips=: '- (Optional) A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24'
+            parameters: '- (Optional) A comma separated list of encoded parameters.'
+            rule_id: '- (Required) The identifier of the WAF rule, e.g api.threats.cross_site_scripting.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            url_patterns: '- (Optional) A comma separated list of patters that correlate to the list of urls.  url_patterns are required if you have urls specified, and patters are applied in the order specified and map literally to the list of urls. Supported values are: contains,equals,prefix,suffix,not_equals,not_contain,not_prefix,not_suffix.  Example of how to apply url_patters to the three urls listed above in order: url_patters="prefix,equals,prefix".'
+            urls=: '- (Optional) A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1).  An empty URL list will remove all URLs. urls="/someurl1,/path/to/my/resource/2.html,/some/url/3"'
+            user_agents: '- (Optional) A comma separated list of encoded user agents.'
+        importStatements: []
+    incapsula_siem_connection:
+        subCategory: Provider Reference
+        description: Provides a customer S3 connection configuration resource.
+        name: incapsula_siem_connection
+        title: incapsula_siem_connection
+        examples:
+            - name: example_siem_connection_s3_basic
+              manifest: |-
+                {
+                  "access_key": "AKIAIOSFODNN7EXAMPLE",
+                  "account_id": "1234567",
+                  "connection_name": "APB siem-logs connection basic auth",
+                  "path": "myBucket/siem/logs",
+                  "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                  "storage_type": "CUSTOMER_S3"
+                }
+            - name: example_siem_connection_s3_arn
+              manifest: |-
+                {
+                  "account_id": "1234567",
+                  "connection_name": "ABP siem-logs connection arn auth",
+                  "path": "myBucket/siem/logs",
+                  "storage_type": "CUSTOMER_S3_ARN"
+                }
+            - name: example_siem_connection_s3_basic
+              manifest: |-
+                {
+                  "access_key": "Sensitive data placeholder",
+                  "account_id": "1234567",
+                  "connection_name": "APB siem-logs connection basic auth",
+                  "path": "myBucket/siem/logs",
+                  "secret_key": "Sensitive data placeholder",
+                  "storage_type": "CUSTOMER_S3"
+                }
+        argumentDocs:
+            access_key: '- (Required when storage_type="CUSTOMER_S3" ) AWS access key.'
+            account_id: '- (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            connection_name: '- (Required) Unique connection name.'
+            id: '- Unique identifier of the customer’s S3 connection.'
+            path: '- (Required) Path to the files inside bucket including bucket name: bucketName/folder/subfolder.'
+            secret_key: '- (Required when storage_type="CUSTOMER_S3") AWS access secret.'
+            storage_type: '- (Required) Storage type. Possible values: CUSTOMER_S3, CUSTOMER_S3_ARN'
+        importStatements: []
+    incapsula_siem_log_configuration:
+        subCategory: Provider Reference
+        description: Provides a Log Configuration resource.
+        name: incapsula_siem_log_configuration
+        title: incapsula_siem_log_configuration
+        examples:
+            - name: example_siem_log_configuration_abp
+              manifest: |-
+                {
+                  "accountId": 1234567,
+                  "configurationName": "ABP SIEM-LOGS configuration",
+                  "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
+                  "datasets": [
+                    "ABP"
+                  ],
+                  "enabled": true,
+                  "producer": "ABP"
+                }
+              references:
+                connectionId: incapsula_siem_connection.example_siem_connection_basic_auth.id
+            - name: example_siem_log_configuration_netsec
+              manifest: |-
+                {
+                  "accountId": 1234567,
+                  "configurationName": "NETSEC SIEM-LOGS configuration",
+                  "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
+                  "datasets": [
+                    "CONNECTION",
+                    "IP"
+                  ],
+                  "enabled": true,
+                  "producer": "NETSEC"
+                }
+              references:
+                connectionId: incapsula_siem_connection.example_siem_connection_basic_auth.id
+            - name: example_siem_log_configuration_ato
+              manifest: |-
+                {
+                  "accountId": 1234567,
+                  "configurationName": "ATO SIEM-LOGS configuration",
+                  "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
+                  "datasets": [
+                    "ATO"
+                  ],
+                  "enabled": true,
+                  "producer": "ATO"
+                }
+              references:
+                connectionId: incapsula_siem_connection.example_siem_connection_basic_auth.id
+            - name: example_siem_log_configuration_audit
+              manifest: |-
+                {
+                  "accountId": 1234567,
+                  "configurationName": "AUDIT Trail SIEM-LOGS configuration",
+                  "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
+                  "datasets": [
+                    "AUDIT_TRAIL"
+                  ],
+                  "enabled": true,
+                  "producer": "AUDIT"
+                }
+              references:
+                connectionId: incapsula_siem_connection.example_siem_connection_basic_auth.id
+            - name: example_siem_log_configuration_csp
+              manifest: |-
+                {
+                  "accountId": 1234567,
+                  "configurationName": "CSP SIEM-LOGS configuration",
+                  "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
+                  "datasets": [
+                    "GOOGLE_ANALYTICS_IDS",
+                    "SIGNIFICANT_DOMAIN_DISCOVERY"
+                  ],
+                  "enabled": true,
+                  "producer": "CSP"
+                }
+              references:
+                connectionId: incapsula_siem_connection.example_siem_connection_basic_auth.id
+        argumentDocs:
+            account_id: '- (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            configurationName: '- (Required) Unique configuration name.'
+            connectionId: '- (Required) Connection id associated with this log configuration'
+            datasets: '- (Required) An array of strings representing the type of logs. Values: ABP for provider type ABP CONNECTION, NETFLOW, IP, ATTACK for provider type NETSEC ATO for provider type ATO AUDIT_TRAIL for provider type AUDIT  GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY for provider type CSP'
+            enabled: '- (Required) Boolean. Values: true/ false'
+            id: '- Unique identifier of the log configuration.'
+            producer: '- (Required) Provider type. Values: ABP, NETSEC, ATO, AUDIT'
+        importStatements: []
+    incapsula_site:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Site resource.
+        name: incapsula_site
+        title: incapsula_site
+        examples:
+            - name: example-site
+              manifest: |-
+                {
+                  "account_id": 123,
+                  "data_storage_region": "US",
+                  "domain": "examplesite.com",
+                  "force_ssl": "false",
+                  "hash_salt": "foobar",
+                  "hashing_enabled": true,
+                  "log_level": "full",
+                  "logs_account_id": "456",
+                  "perf_client_comply_no_cache": true,
+                  "perf_client_enable_client_side_caching": true,
+                  "perf_client_send_age_header": true,
+                  "perf_key_comply_vary": true,
+                  "perf_key_unite_naked_full_cache": true,
+                  "perf_mode_https": "include_all_resources",
+                  "perf_mode_level": "standard",
+                  "perf_mode_time": 1000,
+                  "perf_response_cache_300x": true,
+                  "perf_response_cache_404_enabled": true,
+                  "perf_response_cache_404_time": 60,
+                  "perf_response_cache_empty_responses": true,
+                  "perf_response_cache_http_10_responses": true,
+                  "perf_response_cache_response_header_mode": "custom",
+                  "perf_response_cache_response_headers": [
+                    "Access-Control-Allow-Origin",
+                    "Foo-Bar-Header"
+                  ],
+                  "perf_response_cache_shield": true,
+                  "perf_response_stale_content_mode": "custom",
+                  "perf_response_stale_content_time": 1000,
+                  "perf_response_tag_response_header": "Example-Tag-Value-Header",
+                  "perf_ttl_prefer_last_modified": true,
+                  "perf_ttl_use_shortest_caching": true,
+                  "ref_id": "123",
+                  "send_site_setup_emails": "false",
+                  "site_ip": "2.2.2.2"
+                }
+        argumentDocs:
+            acceleration_level: '- (Optional) Sets the acceleration level of the site. Options are none, standard, and aggressive.'
+            account_id: '- (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            active: '- (Optional) Whether the site is active or bypassed by the Imperva network. Options are active and bypass.'
+            approver: '- (Optional) Sets the approver e-mail address that will be used to perform SSL domain validation.'
+            data_storage_region: '- (Optional) The data region to use. Options are APAC, AU, EU, and US.'
+            dns_a_record_name: '- The A record name.'
+            dns_a_record_value: '- The A record value.'
+            dns_cname_record_name: '- The CNAME record name.'
+            dns_cname_record_value: '- The CNAME record value.'
+            dns_record_name: '- the DNS Record type TXT that should be created and set to the domain_verification output value.'
+            domain: '- (Required) The fully qualified domain name of the site. For example: www.example.com, hello.example.com.'
+            domain_redirect_to_full: '- (Optional) Sets the redirect naked to full flag. Pass "true" or empty string in the value parameter.'
+            domain_validation: '- (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are email, html, cname and dns.'
+            domain_verification: '- The domain verification (e.g. GlobalSign verification, HTML meta tag).'
+            force_ssl: '- (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.'
+            hash_salt: '- (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.'
+            hashing_enabled: '- (Optional) Specify if hashing (masking setting) should be enabled.'
+            id: '- Unique identifier in the API for the site.'
+            ignore_ssl: '- (Optional) Sets the ignore SSL flag (if the site is in pending-select-approver state). Pass "true" or empty string in the value parameter.'
+            log_level: '- (Optional) The log level. Options are full, security, and none.'
+            logs_account_id: '- (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            naked_domain_san: '- (Optional) Use true to add the naked domain SAN to a www site’s SSL certificate. Default value: true'
+            original_data_center_id: |-
+                - Numeric representation of the data center created with the site. This parameter is
+                deprecated. Please, use data_source_data_center instead.
+            perf_client_comply_no_cache: '- (Optional) Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.'
+            perf_client_enable_client_side_caching: '- (Optional) Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.'
+            perf_client_send_age_header: '- (Optional) Send Cache-Control: max-age and Age headers.'
+            perf_key_comply_vary: '- (Optional) Comply with Vary. Cache resources in accordance with the Vary response header.'
+            perf_key_unite_naked_full_cache: '- (Optional) Use the Same Cache for Full and Naked Domains. For example, use the same cached resource for www.example.com/a and example.com/a.'
+            perf_mode_https: '- (Optional) The resources that are cached over HTTPS, the general level applies. Options are disabled, dont_include_html, include_html, and include_all_resources.'
+            perf_mode_level: '- (Optional) Caching level. Options are disabled, custom_cache_rules_only, standard, smart, and all_resources.'
+            perf_mode_time: '- (Optional) The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the include_html and include_all_resources levels only.'
+            perf_response_cache_300x: '- (Optional) When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.'
+            perf_response_cache_404_enabled: '- (Optional) Whether or not to cache 404 responses.'
+            perf_response_cache_404_time: |-
+                - (Optional) The time in seconds to cache 404 responses. Value should be divisible by
+                60.
+            perf_response_cache_empty_responses: '- (Optional) Cache responses that don’t have a message body.'
+            perf_response_cache_http_10_responses: '- (Optional) Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.'
+            perf_response_cache_response_header_mode: '- (Optional) The working mode for caching response headers. Options are all and custom.'
+            perf_response_cache_response_headers: |-
+                - (Optional) An array of strings representing the response headers to be cached when working in custom mode. If empty, no response headers are cached.
+                For example: ["Access-Control-Allow-Origin","Access-Control-Allow-Methods"].
+            perf_response_cache_shield: '- (Optional) Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.'
+            perf_response_stale_content_mode: '- (Optional) The working mode for serving stale content. Options are disabled, adaptive, and custom.'
+            perf_response_stale_content_time: '- (Optional) The time, in seconds, to serve stale content for when working in custom work mode.'
+            perf_response_tag_response_header: '- (Optional) Tag the response according to the value of this header. Specify which origin response header contains the cache tags in your resources.'
+            perf_ttl_prefer_last_modified: '- (Optional) Prefer ''Last Modified'' over eTag. When this option is checked, Imperva prefers using Last Modified values (if available) over eTag values (recommended on multi-server setups).'
+            perf_ttl_use_shortest_caching: '- (Optional) Use shortest caching duration in case of conflicts. By default, the longest duration is used in case of conflict between caching rules or modes. When this option is checked, Imperva uses the shortest duration in case of conflict.'
+            remove_ssl: '- (Optional) Sets the remove SSL from site flag. Pass "true" or empty string in the value parameter.'
+            restricted_cname_reuse: parameter is currently not supported. Please do not use/change value.
+            seal_location: '- (Optional) Sets the seal location. Options are api.seal_location.none, api.seal_location.bottom_left, api.seal_location.right_bottom, api.seal_location.left, and api.seal_location.right.'
+            send_site_setup_emails: '- (Optional) If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.'
+            site_creation_date: '- Numeric representation of the site creation date.'
+            site_ip: '- (Optional) The web server IP/CNAME. This field should be specified when creating a site and the domain does not yet exist or the domain already points to Imperva Cloud. When specified, its value will be used for adding site only. After site is already created this field will be ignored. To modify site ip, please use resource incapsula_data_centers_configuration instead.'
+            wildcard_san: '- (Optional) Use true to add the wildcard SAN or false to add the full domain SAN to the site’s SSL certificate. Default value: true'
+        importStatements: []
+    incapsula_site_domain_configuration:
+        subCategory: Provider Reference
+        description: Provides an Incapsula Site Domains Configuration resource.
+        name: incapsula_site_domain_configuration
+        title: incapsula_site_domain_configuration
+        examples:
+            - name: site-domain-configuration
+              manifest: |-
+                {
+                  "domain": [
+                    {
+                      "name": "example-a.my-web-site.com"
+                    },
+                    {
+                      "name": "example-b.my-web-site.com"
+                    }
+                  ],
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            cname_redirection_record: '- CNAME validation code for traffic redirection.  Point your domain''s DNS to this record in order to forward the traffic to Imperva'
+            domain: '- (Required) The fully qualified domain name of the site.'
+            id: '- The id of the domain.'
+            name: '- The address of the domain.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            status: '- PROTECTED, VERIFIED, BYPASSED, MISCONFIGURED.'
+        importStatements: []
+    incapsula_site_monitoring:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Site Monitoring resource.
+        name: incapsula_site_monitoring
+        title: incapsula_site_monitoring
+        examples:
+            - name: example_site_monitoring
+              manifest: |-
+                {
+                  "alarm_on_dc_failover": true,
+                  "alarm_on_server_failover": true,
+                  "alarm_on_stands_by_failover": true,
+                  "expected_received_string": "some string",
+                  "failed_requests_duration": 1,
+                  "failed_requests_duration_units": "MINUTES",
+                  "failed_requests_min_number": 2,
+                  "failed_requests_percentage": 30,
+                  "http_request_timeout": 50,
+                  "http_request_timeout_units": "SECONDS",
+                  "http_response_error": "501-599",
+                  "monitoring_url": "/users",
+                  "required_monitors": "ALL",
+                  "site_id": 1234,
+                  "up_check_retries": 10,
+                  "up_checks_interval": 15,
+                  "up_checks_interval_units": "SECONDS",
+                  "use_verification_for_down": false
+                }
+        argumentDocs:
+            alarm_on_dc_failover: '- (Optional) Indicates whether or not an email will be sent upon data center failover. Default: true'
+            alarm_on_server_failover: '- (Optional) Indicates whether or not an email will be sent upon server failover. Default: false'
+            alarm_on_stands_by_failover: '- (Optional) Indicates whether or not an email will be sent upon failover to a standby data center. Default: true'
+            expected_received_string: '- (Optional) The expected string. If left empty, any response, except for the codes defined in the HTTP response error codes to be treated as Down parameter, will be considered successful. If the value is non-empty, then the defined value must appear within the response string for the response to be considered successful.'
+            failed_requests_duration: '- (Optional) The minimum duration of failures above the threshold to consider server as down. 20-180 SECONDS or 1-2 MINUTES. Default: 40.'
+            failed_requests_duration_units: '- (Optional) Time unit. Possible values: SECONDS, MINUTES. Default: SECONDS.'
+            failed_requests_min_number: '- (Optional) The minimum number of failed requests to be considered as failure. Default: 3'
+            failed_requests_percentage: '- (Optional) The percentage of failed requests to the origin server. Default: 40'
+            http_request_timeout: '- (Optional) The maximum time to wait for an HTTP response. 1-200 SECONDS or 1-2 MINUTES. Default: 35'
+            http_request_timeout_units: '- (Optional) Time unit. Default: SECONDS.'
+            http_response_error: '- (Optional) The HTTP response error codes or patterns that will be counted as request failures. Default: "501-599".'
+            id: '- Unique identifier in the API for the Site Monitoring. The id is identical to Site id.'
+            monitoring_url: '- (Optional) The URL to use for monitoring your website. Default: "/"'
+            required_monitors: '- (Optional) Monitors required to report server / data center as down. Default: "MOST"'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            up_check_retries: '- (Optional) Every time an origin server is tested to see whether it’s back up, the test will be retried this number of times. Default: 3'
+            up_checks_interval: '- (Optional) After an origin server was identified as down, Imperva will periodically test it to see whether it has recovered, according to the frequency defined in this parameter. 10-120 SECONDS or 1-2 MINUTES. Default: 20'
+            up_checks_interval_units: '- (Optional) Time unit. Default: SECONDS.'
+            use_verification_for_down: '- (Optional) If Imperva determines that an origin server is down according to failed request criteria, it will initiate another request to verify that the origin server is down. Default: true'
+        importStatements: []
+    incapsula_site_ssl_settings:
+        subCategory: Provider Reference
+        description: Provides an Incapsula Site SSL Settings resource.
+        name: incapsula_site_ssl_settings
+        title: incapsula_site_ssl_settings
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "hsts": [
+                    {
+                      "is_enabled": true,
+                      "max_age": 86400,
+                      "pre_loaded": false,
+                      "sub_domains_included": true
+                    }
+                  ],
+                  "site_id": "${incapsula_site.mysite.id}"
+                }
+              references:
+                site_id: incapsula_site.mysite.id
+        argumentDocs:
+            "31536000": (1 year)
+            hsts: '- (Optional): HTTP Strict Transport Security (HSTS) configuration settings for the site.'
+            id: '- Unique identifier in the API for the Site SSL settings. The id is identical to Site id.'
+            is_enabled: '- (Optional): Whether HSTS is enabled for the site.'
+            max_age: '- (Optional): The maximum age, in seconds, that the HSTS policy should be enforced for the site.'
+            'message:': Site does not have SSL configured
+            pre_loaded: '- (Optional): Whether the site is preloaded in the HSTS preload list maintained by browsers.'
+            set: of hsts_config resource (defined below)
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            'status:': "406"
+            sub_domains_included: '- (Optional): Whether sub-domains should be included in the HSTS policy.'
+        importStatements: []
+    incapsula_subaccount:
+        subCategory: Provider Reference
+        description: Provides a Incapsula SubAccount resource.
+        name: incapsula_subaccount
+        title: incapsula_subaccount
+        examples:
+            - name: example-subaccount
+              manifest: |-
+                {
+                  "data_storage_region": "US",
+                  "enable_http2_for_new_sites": true,
+                  "enable_http2_to_origin_for_new_sites": true,
+                  "log_level": "full",
+                  "logs_account_id": "789",
+                  "sub_account_name": "Example SubAccount"
+                }
+        argumentDocs:
+            data_storage_region: '- (Optional) Default data region of the sub-account for newly created sites. Options are APAC, EU, US and AU. Defaults to US.'
+            enable_http2_for_new_sites: '- (Optional) Use this option to enable HTTP/2 support for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are true and false. Defaults to true.'
+            enable_http2_to_origin_for_new_sites: '- (Optional) Use this option to enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be ''true'' once ''enable_http2_for_new_sites'' is enabled for newly created sites. Options are true and false. Defaults to false.'
+            id: '- Unique identifier in the API for the Sub Account ID.'
+            log_level: '- (Optional) The log level. Options are full, security, none, default.'
+            logs_account_id: '- (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            parent_id: '- (Optional) The newly created sub-account''s parent id. If not specified, the invoking account will be assigned as the parent.'
+            ref_id: '- (Optional) Customer specific identifier for this operation.'
+            sub_account_name: '- (Mandatory) SubAccount name.'
+        importStatements: []
+    incapsula_txt_record:
+        subCategory: Provider Reference
+        description: Provides a Incapsula TXT Record(s) association resource.
+        name: incapsula_txt_record
+        title: incapsula_txt_record
+        examples:
+            - name: test
+              manifest: |-
+                {
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "txt_record_value_one": "test1",
+                  "txt_record_value_two": "test2"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+              dependencies:
+                incapsula_site.example-site: |-
+                    {
+                      "domain": "www.example.com"
+                    }
+        argumentDocs:
+            id: '- Unique identifier for the TXT Records association.'
+            site_id: '- (Required) Numeric identifier of the site.'
+            txt_record_value_five: '- (Optional) New value for txt record number five.'
+            txt_record_value_four: '- (Optional) New value for txt record number four.'
+            txt_record_value_one: '- (Optional) New value for txt record number one.'
+            txt_record_value_three: '- (Optional) New value for txt record number three.'
+            txt_record_value_two: '- (Optional) New value for txt record number two.'
+        importStatements: []
+    incapsula_waf_log_setup:
+        subCategory: Provider Reference
+        description: Provides an Incapsula WAF Log Setup resource.
+        name: incapsula_waf_log_setup
+        title: incapsula_waf_log_setup
+        examples:
+            - name: ex-sftp-waf_log_setup
+              manifest: |-
+                {
+                  "account_id": 102030,
+                  "sftp_destination_folder": "/home/user_name/log_folder",
+                  "sftp_host": "samplehost",
+                  "sftp_password": "**********",
+                  "sftp_user_name": "sampleuser"
+                }
+            - name: ex-s3-waf_log_setup1
+              manifest: |-
+                {
+                  "account_id": 102030,
+                  "s3_access_key": "AKIAIOSFODNN7EXAMPLE",
+                  "s3_bucket_name": "bucket_name/log_folder",
+                  "s3_secret_key": "****************************************"
+                }
+            - name: ex-s3-waf_log_setup2
+              manifest: |-
+                {
+                  "account_id": 102040,
+                  "enabled": false,
+                  "s3_access_key": "AKIAIOSFODNN7EXAMPLE",
+                  "s3_bucket_name": "bucket_name/log_folder",
+                  "s3_secret_key": "****************************************"
+                }
+            - name: ex-s3-waf_log_setup3
+              manifest: |-
+                {
+                  "account_id": 102050,
+                  "enabled": false
+                }
+        argumentDocs:
+            account_id: '- (Mandatory) The Numeric identifier of the account to operate on.'
+            enabled: '- (Optional) A boolean flag to enable or disable WAF Logs. Default value is true.'
+            s3_access_key: '- (Optional) S3 access key.'
+            s3_bucket_name: '- (Optional) S3 bucket name.'
+            s3_secret_key: '- (Optional, Sensitive) S3 secret key.'
+            sftp_destination_folder: '- (Optional) The path to the directory on the SFTP server.'
+            sftp_host: '- (Optional) The IP address of your SFTP server.'
+            sftp_password: '- (Optional, Sensitive) A corresponding password for the user account used to log in to the SFTP server.'
+            sftp_user_name: '- (Optional) A username that will be used to log in to the SFTP server.'
+        importStatements: []
+    incapsula_waf_security_rule:
+        subCategory: Provider Reference
+        description: Provides a Incapsula WAF Security Rule resource.
+        name: incapsula_waf_security_rule
+        title: incapsula_waf_security_rule
+        examples:
+            - name: example-waf-backdoor-rule
+              manifest: |-
+                {
+                  "rule_id": "api.threats.backdoor",
+                  "security_rule_action": "api.threats.action.quarantine_url",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-bot-access-control-rule
+              manifest: |-
+                {
+                  "block_bad_bots": "true",
+                  "challenge_suspected_bots": "true",
+                  "rule_id": "api.threats.bot_access_control",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+            - name: example-waf-ddos-rule
+              manifest: |-
+                {
+                  "activation_mode": "api.threats.ddos.activation_mode.on",
+                  "ddos_traffic_threshold": "5000",
+                  "rule_id": "api.threats.ddos",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            activation_mode: '- (Optional) The mode of activation for ddos on a site. Possible values: api.threats.ddos.activation_mode.off, api.threats.ddos.activation_mode.auto, api.threats.ddos.activation_mode.on.'
+            block_bad_bots: '- (Optional) Whether or not to block bad bots. Possible values: true, false.'
+            challenge_suspected_bots: '- (Optional) Whether or not to send a challenge to clients that are suspected to be bad bots (CAPTCHA for example). Possible values: true, false.'
+            ddos_traffic_threshold: '- (Optional) Consider site to be under DDoS if the request rate is above this threshold. The valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000.'
+            id: '- Unique identifier in the API for the WAF Security Rule.'
+            rule_id: '- (Required) The identifier of the WAF rule, e.g api.threats.cross_site_scripting.'
+            security_rule_action: '- (Optional) The action that should be taken when a threat is detected, for example: api.threats.action.block_ip. See above examples for rule_id and action combinations.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+        importStatements: []
+    incapsula_waiting_room:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Waiting Room resource.
+        name: incapsula_waiting_room
+        title: incapsula_waiting_room
+        examples:
+            - name: example-waiting-room
+              manifest: |-
+                {
+                  "bots_action_in_queuing_mode": "WAIT_IN_LINE",
+                  "concurrent_sessions_threshold": 600,
+                  "description": "Waiting room description",
+                  "enabled": true,
+                  "entrance_rate_threshold": 600,
+                  "filter": "        URL == \"/example\"\n",
+                  "html_template_base64": "${filebase64(\"${\"path/to/your/template.html\"}\")}",
+                  "inactivity_timeout": 30,
+                  "name": "Waiting room name",
+                  "queue_inactivity_timeout": 1,
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            $ESTIMATED_TIME_TO_WAIT$: '- Estimated time to wait.'
+            $WAITING_ROOM_CONFIG$: '- Calls a script that periodically updates the status of the user, and reloads the page when the user is allowed to enter the website from the waiting room. This parameter is mandatory and should not be modified or deleted.'
+            $WAITING_ROOM_LAST_STATUS_UPDATE$: '- Used to display the time of the last status update.'
+            $WAITING_ROOM_LOADER$: '- Used to validate the loading of the page. This parameter is mandatory and should not be modified or deleted.'
+            $WAITING_ROOM_POSITION_IN_LINE$: '- Used to display the user''s position in the waiting room queue.'
+            $WAITING_ROOM_WRAPPER$: '- Used to validate the content of the template. This parameter is mandatory and should not be modified or deleted.'
+            BLOCK: '- Block this request.'
+            BYPASS: '- Bypass the queue.'
+            WAIT_IN_LINE: '- Wait in line alongside regular users.'
+            account_id: '- (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.'
+            bots_action_in_queuing_mode: |-
+                - (Optional) The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time. Applies only when the activation threshold has been passed and visitors are being sent to the queue. Default: WAIT_IN_LINE
+                Possible values:
+            concurrent_sessions_threshold: '- (Optional) The waiting room is activated when the number of active users reaches the specified value. Minimum value = 1.'
+            created_at: '- (timestamp) When the waiting room was created.'
+            description: '- (Optional) The waiting room description.'
+            enabled: '- (Optional) Indicates if this waiting room is enabled or not. Default: true.'
+            entrance_rate_threshold: '- (Optional) The waiting room is activated when new users per minute exceed the specified value. Minimum of 60 users per minute.'
+            filter: '- (Optional) The conditions that determine on which sessions this waiting room applies. For example, you can create a condition to apply the waiting room to a subset of your website, instead of to the entire website, such as: URL contains "^/ShoppingCart". You can also use conditions to create waiting rooms for different visitor groups, such as visitors from different countries. For example, CountryCode == GB. See Rule Filter Parameters for more filtering options. Default: No filter. The room applies to the entire website and all users.'
+            html_template_base64: '- (Optional) The HTML template file path in Base64 format. A default template is used in case one isn''t provided. The following placeholders can be used to insert dynamic information:'
+            id: '- Unique identifier in the API for the waiting room.'
+            inactivity_timeout: '- (Optional, Mandatory if concurrent_sessions_threshold is used) Inactivity timeout, from 1 to 30 minutes. If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site. On returning to the site, the user needs to wait in line again if the waiting room is active. Tip: When enabling the concurrent_sessions_threshold, the inactivity timeout is very important. Once the site is at full capacity (the threshold has been passed), no new user can access the site until another user leaves and frees up space. To optimize the user experience, we recommend setting a balanced inactivity timeout value — long enough so that the user''s session is still open if they return quickly, but not so long that it unnecessarily prevents access to other waiting visitors. The default timeout of 5 minutes is the recommended minimum value. Default: 5 minutes.'
+            last_modified_by: '- (user email) Last user modifying the waiting room.'
+            mode: '- (QUEUING or NOT_QUEUING) Waiting room current mode.'
+            modified_at: '- (timestamp) When the waiting room was last modified.'
+            name: '- (Required) The waiting room name. Must be unique across all waiting rooms of the site.'
+            queue_inactivity_timeout: '- (Optional) Queue inactivity timeout, from 1 to 10 minutes. A user in the waiting room who is inactive for a longer period of time is considered as having left the queue. On returning to the site, the user moves to the end of the queue and needs to wait in line again if the waiting room is active. Default: 1 minute.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
         importStatements: []
