@@ -7,7 +7,7 @@ PROJECT_REPO ?= github.com/kernel-kun/$(PROJECT_NAME)
 export TERRAFORM_VERSION ?= 1.8.3
 
 export TERRAFORM_PROVIDER_SOURCE ?= imperva/incapsula
-export TERRAFORM_PROVIDER_REPO ?= https://github.com/imperva/terraform-provider-incapsula
+export TERRAFORM_PROVIDER_REPO ?= https://github.com/kernel-kun/terraform-provider-incapsula
 export TERRAFORM_PROVIDER_VERSION ?= 3.23.1
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-incapsula
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://releases.hashicorp.com/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/$(TERRAFORM_PROVIDER_VERSION)
