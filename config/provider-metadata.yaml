@@ -627,13 +627,13 @@ resources:
             mitigation_action_for_medium_risk: '- (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.'
             site_id: '- (Required) Numeric identifier of the site to operate on.'
         importStatements: []
-    incapsula_ato_site_allowlist_configuration:
+    incapsula_ato_site_allowlist:
         subCategory: Provider Reference
-        description: Provides an Incapsula ATO site allowlist configuration resource.
-        name: incapsula_ato_site_allowlist_configuration
+        description: Provides an Incapsula ATO site allowlist resource.
+        name: incapsula_ato_site_allowlist
         title: incapsula_ato_site_allowlist
         examples:
-            - name: demo-terraform-ato-site-allowlist-configuration
+            - name: demo-terraform-ato-site-allowlist
               manifest: |-
                 {
                   "account_id": "${incapsula_site.example-site.account_id}",
@@ -753,6 +753,38 @@ resources:
             site_id: '- (Required) Numeric identifier of the site to operate on.'
             text: '- (Optional) Tag name if action is HTTP_CACHE_ADD_TAG. Text to be added to the cache key as suffix if action is HTTP_CACHE_ENRICH_CACHE_KEY.'
             ttl: '- (Optional) TTL in seconds. Relevant for HTTP_CACHE_MAKE_STATIC and HTTP_CACHE_CLIENT_CACHE_CTL actions.'
+        importStatements: []
+    incapsula_certificate_signing_request:
+        subCategory: Provider Reference
+        description: Provides a Incapsula Certificate Signing Request resource.
+        name: incapsula_certificate_signing_request
+        title: incapsula_certificate_signing_request
+        examples:
+            - name: certificate-signing-request
+              manifest: |-
+                {
+                  "city": "BNE",
+                  "country": "AU",
+                  "domain": "sandwich.au",
+                  "email": "test@sandwich.au",
+                  "organization": "Tacos Pty Ltd",
+                  "organization_unit": "Kitchen",
+                  "site_id": "${incapsula_site.example-site.id}",
+                  "state": "QLD"
+                }
+              references:
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            city: '- (Optional) The city where your organization is located.'
+            country: '- (Optional) The two-letter ISO code for the country where your organization is located.'
+            csr_content: '- (String) The certificate request data.'
+            domain: '- (Optional) The common name. For example: example.com'
+            email: '- (Optional) The Email address. For example: joe@example.com'
+            id: '- (String) At the moment, only one active certificate can be stored. This exported value is always set to site_id.'
+            organization: '- (Optional) The legal name of your organization. This should not be abbreviated or include suffixes such as Inc., Corp., or LLC.'
+            organization_unit: '- (Optional) The division of your organization handling the certificate. For example, IT Department.'
+            site_id: '- (Required) Numeric identifier of the site to operate on.'
+            state: '- (Optional) The state/region where your organization is located. This should not be abbreviated.'
         importStatements: []
     incapsula_csp_site_configuration:
         subCategory: Provider Reference
@@ -1615,6 +1647,51 @@ resources:
             require_client_certificate: '- (Optional) When set to true, the end user is required to present the client certificate in order to access the site. Default - false.'
             site_id: '- (Required) Numeric identifier of the site to operate on.'
         importStatements: []
+    incapsula_mtls_imperva_to_origin_certificate:
+        subCategory: Provider Reference
+        description: Provides a Mutual TLS Imperva to Origin certificate resource.
+        name: incapsula_mtls_imperva_to_origin_certificate
+        title: incapsula_mtls_imperva_to_origin_certificate
+        examples:
+            - name: mtls_imperva_to_origin_certificate
+              manifest: |-
+                {
+                  "account_id": "incapsula_account.example-account.id",
+                  "certificate": "${filebase64(\"${\"path/to/your/cert.pem\"}\")}",
+                  "certificate_name": "pem certificate example",
+                  "passphrase": "my_passphrase",
+                  "private_key": "${filebase64(\"${\"path/to/your/private_key.pem\"}\")}"
+                }
+        argumentDocs:
+            account_id: '- (Required) Numeric identifier of the account to operate on.'
+            certificate: |-
+                - (Required) Your mTLS client certificate file. Supported formats: pem, der, pfx, cert, crt, p7b, cer, p12, ca-bundle, bundle, cert.
+                You can use the Terraform HCL filebase64 directive to pull in the contents from a file. You can also embed the certificate in the configuration.
+            certificate_name: '- (Optional) A descriptive name for your mTLS Certificate.'
+            id: '- Unique identifier of the Mutual TLS Imperva to Origin Certificate.'
+            passphrase: '- Your private key passphrase. Leave empty if the private key is not password protected.'
+            private_key: '- Your private key file. supported formats: pem, der, priv, key. If pfx or p12 certificate is used, then this field can remain empty.'
+        importStatements: []
+    incapsula_mtls_imperva_to_origin_certificate_site_association:
+        subCategory: Provider Reference
+        description: Provides a Mutual TLS Imperva to Origin certificate resource.
+        name: incapsula_mtls_imperva_to_origin_certificate_site_association
+        title: incapsula_mtls_imperva_to_origin_certificate
+        examples:
+            - name: mtls_imperva_to_origin_certificate_site_association
+              manifest: |-
+                {
+                  "certificate_id": "${incapsula_certificate.example-certificate.id}",
+                  "site_id": "${incapsula_site.example-site.id}"
+                }
+              references:
+                certificate_id: incapsula_certificate.example-certificate.id
+                site_id: incapsula_site.example-site.id
+        argumentDocs:
+            certificate_id: '- (Required) The mTLS certificate id you want to assign to your site.'
+            id: '- Unique identifier of the Mutual TLS Imperva to Origin Certificate.'
+            site_id: '- (Required) Site id to assign to a given mTLS client certificate.'
+        importStatements: []
     incapsula_notification_center_policy:
         subCategory: Provider Reference
         description: Provides a Incapsula Notification Center Policy resource.
@@ -2070,7 +2147,9 @@ resources:
                   "connectionId": "${incapsula_siem_connection.example_siem_connection_basic_auth.id}",
                   "datasets": [
                     "GOOGLE_ANALYTICS_IDS",
-                    "SIGNIFICANT_DOMAIN_DISCOVERY"
+                    "SIGNIFICANT_DOMAIN_DISCOVERY",
+                    "SIGNIFICANT_SCRIPT_DISCOVERY",
+                    "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"
                   ],
                   "enabled": true,
                   "producer": "CSP"
@@ -2081,7 +2160,7 @@ resources:
             account_id: '- (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.'
             configurationName: '- (Required) Unique configuration name.'
             connectionId: '- (Required) Connection id associated with this log configuration'
-            datasets: '- (Required) An array of strings representing the type of logs. Values: ABP for provider type ABP CONNECTION, NETFLOW, IP, ATTACK for provider type NETSEC ATO for provider type ATO AUDIT_TRAIL for provider type AUDIT  GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY for provider type CSP'
+            datasets: '- (Required) An array of strings representing the type of logs. Values: ABP for provider type ABP CONNECTION, NETFLOW, IP, ATTACK for provider type NETSEC ATO for provider type ATO AUDIT_TRAIL for provider type AUDIT  GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY, SIGNIFICANT_SCRIPT_DISCOVERY, SIGNIFICANT_DATA_TRANSFER_DISCOVERY for provider type CSP'
             enabled: '- (Required) Boolean. Values: true/ false'
             id: '- Unique identifier of the log configuration.'
             producer: '- (Required) Provider type. Values: ABP, NETSEC, ATO, AUDIT'
@@ -2354,9 +2433,9 @@ resources:
                   "hsts": [
                     {
                       "is_enabled": true,
-                      "max_age": 86400,
+                      "max_age": 31536000,
                       "pre_loaded": false,
-                      "sub_domains_included": true
+                      "sub_domains_included": false
                     }
                   ],
                   "inbound_tls_settings": [
@@ -2365,14 +2444,16 @@ resources:
                       "tls_configuration": [
                         {
                           "ciphers_support": [
-                            "TLS_CHACHA20_POLY1305_SHA256",
-                            "TLS_AES_256_GCM_SHA384"
+                            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
                           ],
                           "tls_version": "TLS_1_2"
                         },
                         {
                           "ciphers_support": [
-                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+                            "TLS_AES_128_GCM_SHA256",
+                            "TLS_CHACHA20_POLY1305_SHA256",
+                            "TLS_AES_256_GCM_SHA384"
                           ],
                           "tls_version": "TLS_1_3"
                         }
