@@ -1,0 +1,26 @@
+apiVersion: policy.crossplane.io/v1alpha1
+kind: Policy
+metadata:
+  annotations:
+    meta.upbound.io/example-id: policy/v1alpha1/policy
+  labels:
+    testing.upbound.io/example-name: example-whitelist-ip-policy
+  name: example-whitelist-ip-policy
+spec:
+  forProvider:
+    description: Example WHITELIST IP Policy description
+    enabled: true
+    name: Example WHITELIST IP Policy
+    policySettings: |2
+          [
+            {
+              "settingsAction": "ALLOW",
+              "policySettingType": "IP",
+              "data": {
+                "ips": [
+                  "1.2.3.4"
+                ]
+              }
+            }
+          ]
+    policyType: WHITELIST

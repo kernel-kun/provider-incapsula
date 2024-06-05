@@ -1,0 +1,18 @@
+apiVersion: account.crossplane.io/v1alpha1
+kind: PolicyAssociation
+metadata:
+  annotations:
+    meta.upbound.io/example-id: account/v1alpha1/policyassociation
+  labels:
+    testing.upbound.io/example-name: example-account-policy-association
+  name: example-account-policy-association
+spec:
+  forProvider:
+    accountId: ${data.incapsula_account_data.account_data.current_account}
+    defaultNonMandatoryPolicyIdsRefs:
+    - name: example
+    - name: example
+    - name: example
+    - name: example
+    - name: default_acl_policy
+    - name: default_allowlist_policy

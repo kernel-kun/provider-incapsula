@@ -1,0 +1,17 @@
+apiVersion: policy.crossplane.io/v1alpha1
+kind: AssetAssociation
+metadata:
+  annotations:
+    meta.upbound.io/example-id: policy/v1alpha1/assetassociation
+  labels:
+    testing.upbound.io/example-name: example-policy-asset-association
+  name: example-policy-asset-association
+spec:
+  forProvider:
+    assetIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example-site-dns
+    assetType: WEBSITE
+    policyIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example-policy
