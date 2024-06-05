@@ -10,6 +10,9 @@ import (
 
 	ujconfig "github.com/crossplane/upjet/pkg/config"
 
+	"github.com/kernel-kun/provider-incapsula/config/assetassociation"
+	"github.com/kernel-kun/provider-incapsula/config/policy"
+	"github.com/kernel-kun/provider-incapsula/config/policyassociation"
 	"github.com/kernel-kun/provider-incapsula/config/site"
 )
 
@@ -37,6 +40,9 @@ func GetProvider() *ujconfig.Provider {
 	for _, configure := range []func(provider *ujconfig.Provider){
 		// add custom config functions
 		site.Configure,
+		policy.Configure,
+		policyassociation.Configure,
+		assetassociation.Configure,
 	} {
 		configure(pc)
 	}

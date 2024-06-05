@@ -4,7 +4,7 @@
 PROJECT_NAME ?= provider-incapsula
 PROJECT_REPO ?= github.com/kernel-kun/$(PROJECT_NAME)
 
-export TERRAFORM_VERSION ?= 1.8.3
+export TERRAFORM_VERSION ?= 1.8.4
 
 export TERRAFORM_PROVIDER_SOURCE ?= imperva/incapsula
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/kernel-kun/terraform-provider-incapsula
@@ -40,7 +40,7 @@ NPROCS ?= 1
 # to half the number of CPU cores.
 GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 
-GO_REQUIRED_VERSION ?= 1.22.2
+GO_REQUIRED_VERSION ?= 1.22.4
 GOLANGCILINT_VERSION ?= 1.58.1
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/provider $(GO_PROJECT)/cmd/generator
 GO_LDFLAGS += -X $(GO_PROJECT)/internal/version.Version=$(VERSION)
@@ -50,7 +50,7 @@ GO_SUBDIRS += cmd internal apis
 # ====================================================================================
 # Setup Kubernetes tools
 
-KIND_VERSION = v0.22.0
+KIND_VERSION = v0.23.0
 UP_VERSION = v0.30.0
 UP_CHANNEL = stable
 UPTEST_VERSION = v0.5.0

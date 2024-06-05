@@ -12,12 +12,12 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	// Import requires using a randomly generated account ID from provider: 0123456
 	"incapsula_site": config.IdentifierFromProvider,
 	// Can be imported using site_id
-	// "incapsula_policy": config.IdentifierFromProvider,
-	// // Can be imported using policy_id
-	// "incapsula_account_policy_association": config.IdentifierFromProvider,
-	// // Can be imported using account_id
-	// "incapsula_policy_asset_association": config.IdentifierFromProvider,
-	// // Can be imported using policy_id/asset_id/asset_type
+	"incapsula_policy": config.IdentifierFromProvider,
+	// Can be imported using policy_id
+	"incapsula_account_policy_association": config.IdentifierFromProvider,
+	// Can be imported using account_id
+	"incapsula_policy_asset_association": config.IdentifierFromProvider,
+	// Can be imported using policy_id/asset_id/asset_type
 }
 
 // ExternalNameConfigurations applies all external name configs listed in the
